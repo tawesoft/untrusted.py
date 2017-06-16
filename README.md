@@ -75,6 +75,9 @@ or via the repo on GitHub
 
 ### Untrusted collection types
 
+This module provides types to lazily wrap collections of untrusted values.
+The values are wrapped with an appropriate `untrusted.*` type when accessed.
+
 #### `untrusted.iterator`
 
 This is a view over any iterable or generator yielding untrusted values.
@@ -87,6 +90,22 @@ This is a view over any `list`-like object containing untrusted values.
 
 This a view over any `dict`-like object containing untrusted values and,
 optionally, even untrusted keys.
+
+#### Nested containers
+
+Lazily nested containers are fully supported, too:
+
+    someValues = [
+        ["apple","banana","orange", "pineapple"],
+        ["cat", "dog", "monkey", "elephant"],
+        ["green", "yellow", "blue", "rainbow"],
+    ]
+
+    seq = untrusted.sequenceOf(untrusted.sequence)
+
+    for i in seq(someValues):
+        print(i.escape(someEscapeMethod, param1, param2, namedParameter=value))
+
 
 
 ## Notes of Caution
