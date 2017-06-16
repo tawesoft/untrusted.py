@@ -80,15 +80,18 @@ The values are wrapped with an appropriate `untrusted.*` type when accessed.
 
 #### `untrusted.iterator`
 
-This is a view over any iterable or generator yielding untrusted values.
+This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
+over any iterable or generator yielding untrusted values.
 
 #### `untrusted.sequence`
 
-This is a view over any `list`-like object containing untrusted values.
+This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
+over any `list`-like object containing untrusted values.
 
 #### `untrusted.mapping`
 
-This a view over any `dict`-like object containing untrusted values and,
+This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
+over any `dict`-like object containing untrusted values and,
 optionally, even untrusted keys.
 
 #### Nested containers
@@ -138,8 +141,9 @@ a `ValueError` from a function that both escapes and validates.
 
 ### Using untrusted collection types
 
-Untrusted collection types, like `untrusted.sequence`, are "views" over the
-underling object. If the underlying object changes, so does the object you
+Untrusted collection types, like `untrusted.sequence`, are
+"[views](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)"
+over the underling object. If the underlying object changes, so does the object you
 see through the untrusted collection type. In other words: its a reference
 to the same object, not a copy. If that's not what you want, use the
 [copy module](https://docs.python.org/3.4/library/copy.html).
