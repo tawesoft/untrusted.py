@@ -6,11 +6,6 @@ import untrusted.util
 class _incompleteStringType:
     _cast_error = "Implicit cast to/of untrusted.string is not allowed"
 
-    @staticmethod
-    def _to_untrusted_list(xs): return untrusted.sequence(xs)
-    @staticmethod
-    def _to_untrusted_tuple(xs): return tuple(map(string, xs))
-
     # whitelist of methods to wrap that return a simple value e.g. boolean
     _safe_methods = set([
         '__bool__',
@@ -68,10 +63,10 @@ class _incompleteStringType:
     # list of strings, and we want them to be all wrapped by an appropriate
     # untrusted type
     _complex_wrapped_methods = {
-        'partition':    _to_untrusted_tuple.__func__, # returns a 3-tuple
-        'rpartition':   _to_untrusted_tuple.__func__, # returns a 3-tuple
-        'split':        _to_untrusted_list.__func__,  # returns a untrusted.list
-        'splitlines':   _to_untrusted_list.__func__  # returns a untrusted.list
+        'partition':    untrusted.util._to_untrusted_tuple_of_strings, # returns a 3-tuple
+        'rpartition':   untrusted.util._to_untrusted_tuple_of_strings, # returns a 3-tuple
+        'split':        untrusted.util._to_untrusted_list,
+        'splitlines':   untrusted.util._to_untrusted_list,
     }
 
     # disallowed: encode
@@ -116,8 +111,6 @@ class _incompleteStringType:
         return result
 
 
-
-
 # we dynamically create the actual untrusted.string class from the above class
 # with some magic to let us easily passthrough magic methods that are otherwise
 # not picked up when operator overloading
@@ -125,6 +118,5 @@ class _incompleteStringType:
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
     ["add", "bool", "eq", "gt", "gte", "len", "lt", "lte", "neq"]
 ))
-
 
 
