@@ -9,7 +9,7 @@ Tested for Python >= 3.4, but earlier versions may work.
 
 ## Quickstart
 
-## Get Untrusted
+### Get Untrusted
 
     pip install untrusted
 
