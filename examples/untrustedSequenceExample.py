@@ -34,7 +34,7 @@ print("The rest of animals are: "+repr(restOfAnimals))
 # Nesting - here's a list of list of strings
 someValues = [fruits, animals, colors]
 
-untrustedValues = untrusted.sequence(someValues, valueType=untrusted.sequence)
+untrustedValues = untrusted.sequenceOf(untrusted.sequence)(someValues)
 
 for things in untrustedValues:
     print("A list of related things: ")

@@ -109,9 +109,8 @@ over any `dict`-like object mapping trusted or untrusted keys to untrusted value
 
 Lazily nested containers are fully supported, too.
 
-An untrusted container constructor takes an optional valueType argument,
-defaulting to `untrusted.string`. You can construct an appropriate valueType
-with the helper methods `untrusted.sequenceOf` and `untrusted.iteratorOf`.
+Use `untrusted.iteratorOf` or `untrusted.sequenceOf` to create a specific
+container type.
 
 Example:
 
@@ -121,9 +120,13 @@ Example:
         ["green", "yellow", "blue", "rainbow"],
     ]
 
-    seq = untrusted.sequenceOf(untrusted.sequence)
+    seqType = untrusted.sequenceOf(untrusted.sequence)
+    catagories = seqType(someValues)
 
-    for catagory in seq(someValues):
+    # or alternatively
+    catagories = untrusted.sequenceOf(untrusted.sequence)(someValues)
+
+    for catagory in catagories:
         for item in catagory:
             print(item.escape(someEscapeMethod, ...))
 

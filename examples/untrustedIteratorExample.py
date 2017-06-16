@@ -30,11 +30,8 @@ someValues = [
     ["green", "red", "rainbow", "<span color=\"green\">red</span>"]
 ]
 
-it = untrusted.iterator(someValues, valueType=untrusted.iteratorOf(untrusted.string))
-
-# Or, because iterators default to the untrusted.string type, more simply:
-
-it = untrusted.iterator(someValues, valueType=untrusted.iterator)
+myIteratorType = untrusted.iteratorOf(untrusted.iterator)
+it = myIteratorType(someValues)
 
 for things in it:
     print("A list of related things: ")
