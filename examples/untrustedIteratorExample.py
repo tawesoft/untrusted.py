@@ -1,5 +1,7 @@
 
+import html # html.escape
 import untrusted
+
 
 # untrusted.iterator example
 #-------------------------------------------------------------------------------
@@ -25,7 +27,7 @@ for i in it:
 someValues = [
     ["cat", "dog", "zebra"],
     ["apple", "pear", "pineapple"],
-    ["green", "red", "rainbow"]
+    ["green", "red", "rainbow", "<span color=\"green\">red</span>"]
 ]
 
 it = untrusted.iterator(someValues, valueType=untrusted.iteratorOf(untrusted.string))
@@ -38,6 +40,7 @@ for things in it:
     print("A list of related things: ")
     for thing in things:
         print(repr(thing))
-    s = 'My list is: ' + untrusted.string(', ').join(things)
-    print(repr(s))
+    print("things is " + repr(things))
+    s = 'My list is: ' + untrusted.string(', ').join(things).escape(html.escape)
+    print(s)
 

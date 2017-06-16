@@ -78,15 +78,7 @@ class _incompleteStringType:
     # not yet considered: maketrans, translate
 
     def __getattr__(self, name):
-        if name in self._safe_methods:
-            return self._safe_method_wrapper(getattr(self.value, name))
-        elif name in self._simple_wrapped_methods:
-            return self._simple_method_wrapper(getattr(self.value, name))
-        elif name in self._complex_wrapped_methods:
-            result_wrapper = self._complex_wrapped_methods.get(name)
-            return self._complex_method_wrapper(result_wrapper, getattr(self.value, name))
-        else:
-            raise TypeError("attribute %s not supported by untrusted.string" % repr(name))
+        return untrusted.util._wrapped_method(self, name)
 
     def __init__(self, value):
         assert value is not None
@@ -94,7 +86,8 @@ class _incompleteStringType:
         self._value = value
 
     def __radd__(self, *args):
-        other, *_ = self._wrap_args(*args)
+        # underlying str doesn't implement __radd__ for us to wrap
+        other, *_ = untrusted.util._wrap_args(*args)
         return self.__class__(other + self.value)
     
     def __str__(self):
@@ -123,72 +116,6 @@ class _incompleteStringType:
         return result
 
 
-    @classmethod
-    def _wrap_arg(cls, arg):
-        if isinstance(arg, string):
-            return arg.value
-        elif isinstance(arg, str):
-            return arg
-        elif isinstance(arg, collections.abc.Mapping):
-            return cls._wrap_kwargs(**arg)
-        elif hasattr(arg, "__iter__"):
-            return map(lambda x: cls._wrap_arg(x), arg)
-        else:
-            return arg
-
-    @classmethod
-    def _wrap_args(cls, *args):
-        return map(cls._wrap_arg, args)
-
-    @classmethod
-    def _wrap_kwargs(cls, **kwargs):
-        _kwargs = dict()
-
-        for key, value in kwargs.items():
-            _kwargs[key] = cls._wrap_arg(value)
-
-        return _kwargs
-
-
-    def _safe_method_wrapper(self, fn):
-        '''For a method returning a safe value and taking any number of
-           arguments, optionally accepting untrusted.string types in place of
-           `str` arguments, return the result as normal.'''
-
-        def wrapper(*args, **kwargs):
-            _args, _kwargs = self._wrap_args(*args), self._wrap_kwargs(**kwargs)
-            result = fn(*_args, **_kwargs)
-            assert not isinstance(result, str)
-            return result
-
-        return wrapper
-
-
-    def _simple_method_wrapper(self, fn):
-        '''For a method returning a string value and taking any number of
-           arguments, optionally accepting untrusted.string types in place of
-           `str` arguments, return the result as an `untrusted.string`.'''
-
-        def wrapper(*args, **kwargs):
-            _args, _kwargs = self._wrap_args(*args), self._wrap_kwargs(**kwargs)
-            result = fn(*_args, **_kwargs)
-            return self.__class__(result)
-
-        return wrapper
-
-
-    def _complex_method_wrapper(self, result_wrapper, fn):
-        '''For a method returning any type of value, and taking any number of
-           arguments, optionally accepting untrusted.string types in place of
-           `str` arguments, return the result as an appropriate
-            `untrusted.*` type.'''
-
-        def wrapper(*args, **kwargs):
-            _args, _kwargs = self._wrap_args(*args), self._wrap_kwargs(**kwargs)
-            result = fn(*_args, **_kwargs)
-            return result_wrapper(result)
-
-        return wrapper
 
 
 # we dynamically create the actual untrusted.string class from the above class
