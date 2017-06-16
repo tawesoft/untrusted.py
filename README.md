@@ -107,7 +107,13 @@ over any `dict`-like object mapping trusted or untrusted keys to untrusted value
 
 #### Nested containers
 
-Lazily nested containers are fully supported, too:
+Lazily nested containers are fully supported, too.
+
+An untrusted container constructor takes an optional valueType argument,
+defaulting to `untrusted.string`. You can construct an appropriate valueType
+with the helper methods `untrusted.sequenceOf` and `untrusted.iteratorOf`.
+
+Example:
 
     someValues = [
         ["apple","banana","orange", "pineapple"],
