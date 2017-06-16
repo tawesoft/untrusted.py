@@ -25,9 +25,10 @@ class iterator(collections.abc.Iterable):
 
 
 def iteratorOf(valueType):
-    """Dynamically creates a new untrusted.iterator subclass with a specific valueType"""
+    """Dynamically creates a new iterator type for use in the valueType argument
+       of the iterator constructor."""
 
-    assert isinstance(valueType, type)
+    assert isinstance(valueType, type), "iteratorOf expects a type, not a value"
     return type('iterableOf.'+valueType.__module__+'.'+valueType.__name__, (iterator,),{"_valueType": valueType})
     
 

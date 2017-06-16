@@ -19,6 +19,11 @@ except TypeError:
 print("repr(a) is: %s" % repr(a))
 print("repr(b) is: %s" % repr(b))
 
+
+# comparason with normal str values is fine
+assert untrusted.string("cat") == str("cat")
+
+
 # You can add strings and untrusted.strings together, and the result is a
 # new `untrusted.string` .
 

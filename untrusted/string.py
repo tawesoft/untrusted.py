@@ -1,9 +1,10 @@
-import untrusted
 import collections.abc
+import untrusted
+import untrusted.util
 
 
-class string:
-    _cast_error = "Implicit cast of untrusted string input is not allowed"
+class _incompleteStringType:
+    _cast_error = "Implicit cast to/of untrusted.string is not allowed"
 
     @staticmethod
     def _to_untrusted_list(xs): return untrusted.sequence(xs)
@@ -12,6 +13,14 @@ class string:
 
     # whitelist of methods to wrap that return a simple value e.g. boolean
     _safe_methods = set([
+        '__bool__',
+        '__eq__',
+        '__gt__',
+        '__gte__',
+        '__len__',
+        '__lt__',
+        '__lte__',
+        '__neq__',
         'count',
         'endswith',
         'find',
@@ -34,6 +43,8 @@ class string:
 
     # whitelist of methods to wrap that return a `str` value
     _simple_wrapped_methods = set([
+        '__add__',
+        '__radd__',
         'capitalize',
         'casefold',
         'center',
@@ -63,7 +74,7 @@ class string:
         'splitlines':   _to_untrusted_list.__func__  # returns a untrusted.list
     }
 
-    # disallowed: encode, join
+    # disallowed: encode
     # not yet considered: maketrans, translate
 
     def __getattr__(self, name):
@@ -75,66 +86,40 @@ class string:
             result_wrapper = self._complex_wrapped_methods.get(name)
             return self._complex_method_wrapper(result_wrapper, getattr(self.value, name))
         else:
-            raise TypeError(self._cast_error)
+            raise TypeError("attribute %s not supported by untrusted.string" % repr(name))
 
     def __init__(self, value):
         assert value is not None
-        assert isinstance(value, str)
+        assert isinstance(value, str), "Expected str. got %s" % repr(type(value))
         self._value = value
-    
-    def __eq__(self, other):
-        if isinstance(other, string):
-            return (self._value == other.value)
-        elif isinstance(other, str):
-            return (self._value == other)
-        else:
-            raise TypeError(self._cast_error)
-    
-    def __add__(self, other):
-        if isinstance(other, string):
-            return string(self._value + other.value)
-        elif isinstance(other, str):
-            return string(self._value + other)
-        else:
-            raise TypeError(self._cast_error)
-    
-    def __radd__(self, other):
-        if type(other) is string:
-            return string(other.value + self._value)
-        elif isinstance(other, str):
-            return string(other + self._value)
-        else:
-            raise TypeError(self._cast_error)
 
-    def __bool__(self):
-        return True if self._value else False
-    
-    def __len__(self):
-        return len(self._value)
+    def __radd__(self, *args):
+        other, *_ = self._wrap_args(*args)
+        return self.__class__(other + self.value)
     
     def __str__(self):
-        raise TypeError(self.__class__._cast_error)
+        raise TypeError(self._cast_error)
 
     def __repr__(self):
-        return "<untrusted.string: %s>" % repr(self._value)
+        return "<untrusted.string: %s>" % repr(self.value)
 
     @property
     def value(self):
         """Read only access to the raw `str` value."""
         return self._value
 
-    def escape(self, fn, *args, **kwargs):
-        result = fn(self._value, *args, **kwargs)
+    def escape(self, fn, *args, **kwargs) -> str:
+        result = fn(self.value, *args, **kwargs)
         assert isinstance(result, str)
         return result
 
-    def vali(self, fn, *args, **kwargs):
-        result = fn(self._value, *args, **kwargs)
+    def valid(self, fn, *args, **kwargs) -> bool:
+        result = fn(self.value, *args, **kwargs)
         assert isinstance(result, bool)
         return result
 
-    def validate(self, fn, *args, **kwargs):
-        result = fn(self._value, *args, **kwargs)
+    def validate(self, fn, *args, **kwargs) -> any:
+        result = fn(self.value, *args, **kwargs)
         return result
 
 
@@ -204,5 +189,15 @@ class string:
             return result_wrapper(result)
 
         return wrapper
+
+
+# we dynamically create the actual untrusted.string class from the above class
+# with some magic to let us easily passthrough magic methods that are otherwise
+# not picked up when operator overloading
+
+string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
+    ["add", "bool", "eq", "gt", "gte", "len", "lt", "lte", "neq"]
+))
+
 
 
