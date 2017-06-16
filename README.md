@@ -104,7 +104,8 @@ Lazily nested containers are fully supported, too:
     seq = untrusted.sequenceOf(untrusted.sequence)
 
     for i in seq(someValues):
-        print(i.escape(someEscapeMethod, ...))
+        for j in i:
+            print(j.escape(someEscapeMethod, ...))
 
 
 
