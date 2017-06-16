@@ -99,8 +99,7 @@ over any `list`-like object containing untrusted values.
 #### `untrusted.mapping`
 
 This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
-over any `dict`-like object mapping keys to values, containing untrusted values and,
-optionally, even untrusted keys.
+over any `dict`-like object mapping trusted or untrusted keys to untrusted values.
 
 * Looks like a native `dict`.
 * Feels like a native `dict`.
