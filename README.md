@@ -89,6 +89,30 @@ This a view over any `dict`-like object containing untrusted values and,
 optionally, even untrusted keys.
 
 
+## Notes of Caution
+
+### Different contexts
+
+Remember, just because you have used one method to escape an `untrusted.string`
+into a `str`, it may not be safe in other contexts. For example, what's safe
+for HTML might still be dangerous SQL. It's best to delay the escaping until
+the final point of use - keep a value as `untrusted.*` for as long as possible.
+
+This module isn't a magic solution. It's a tool to be used wisely.
+
+
+### Using untrusted collection types
+
+Untrusted collection types, like `untrusted.sequence`, are "views" over the
+underling object. If the underlying object changes, so does the object you
+see through the untrusted collection type. In other words, its a reference
+to the same object, not a copy. If that's not what you want, use the
+[copy module](https://docs.python.org/3.4/library/copy.html).
+
+This should hopefully be obvious and unsuprising behaviour, not at all unique
+to this module, but it can trip people up.
+
+
 ## License
 
 This is free software ([MIT license](https://www.tawesoft.co.uk/kb/article/mit-license-faq)).
@@ -115,5 +139,4 @@ This is free software ([MIT license](https://www.tawesoft.co.uk/kb/article/mit-l
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
-
 
