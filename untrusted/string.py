@@ -128,9 +128,13 @@ class string:
         assert isinstance(result, str)
         return result
 
-    def validate(self, fn, *args, **kwargs):
+    def vali(self, fn, *args, **kwargs):
         result = fn(self._value, *args, **kwargs)
         assert isinstance(result, bool)
+        return result
+
+    def validate(self, fn, *args, **kwargs):
+        result = fn(self._value, *args, **kwargs)
         return result
 
 

@@ -119,7 +119,21 @@ for HTML might still be dangerous SQL. It's best to delay the escaping until
 the final point of use - keep a value as `untrusted.*` for as long as possible.
 
 This module isn't a magic solution. It's a tool to be used wisely. Don't fall
-into the trap of thinking about a value "it's a `str` now so it's safe".
+into the trap of thinking about a value "it's a `str` now so it's completely
+safe".
+
+
+### Escaping vs validation
+
+Just because a string can be escaped safely, it does not mean that it has been
+validated as allowable input. For example, you might put a minimum limit on
+a password. Or you might require that an input isn't a
+[reserved filename](https://stackoverflow.com/questions/448438/windows-and-renaming-folders-the-con-issue).
+
+Nice ways to do this are to use `unstruted.string.valid` method, which returns 
+a boolean, `untrusted.string.validate` method, which returns any value (e.g.
+this might be a list of reasons why the input didn't valdiate), or to throw
+a `ValueError` from a function that both escapes and validates.
 
 
 ### Using untrusted collection types
