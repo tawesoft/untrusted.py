@@ -118,7 +118,8 @@ into a `str`, it may not be safe in other contexts. For example, what's safe
 for HTML might still be dangerous SQL. It's best to delay the escaping until
 the final point of use - keep a value as `untrusted.*` for as long as possible.
 
-This module isn't a magic solution. It's a tool to be used wisely.
+This module isn't a magic solution. It's a tool to be used wisely. Don't fall
+into the trap of thinking about a value "it's a `str` now so it's safe".
 
 
 ### Using untrusted collection types
