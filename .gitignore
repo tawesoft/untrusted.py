@@ -1,0 +1,4 @@
+__pycache__
+
+# a symlink for local testing
+examples/untrusted
