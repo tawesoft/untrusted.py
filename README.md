@@ -105,7 +105,7 @@ This module isn't a magic solution. It's a tool to be used wisely.
 
 Untrusted collection types, like `untrusted.sequence`, are "views" over the
 underling object. If the underlying object changes, so does the object you
-see through the untrusted collection type. In other words, its a reference
+see through the untrusted collection type. In other words: its a reference
 to the same object, not a copy. If that's not what you want, use the
 [copy module](https://docs.python.org/3.4/library/copy.html).
 
