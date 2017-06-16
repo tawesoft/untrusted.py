@@ -83,16 +83,28 @@ The values are wrapped with an appropriate `untrusted.*` type when accessed.
 This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
 over any iterable or generator yielding untrusted values.
 
+* Looks like a native `iterator`.
+* Feels like a native `iterator`.
+* Only yields values wrapped by an `untrusted.*` type.
+
 #### `untrusted.sequence`
 
 This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
 over any `list`-like object containing untrusted values.
 
+* Looks like a native `list`.
+* Feels like a native `list`.
+* All accessed values are wrapped by an `untrusted.*` type.
+
 #### `untrusted.mapping`
 
 This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
-over any `dict`-like object containing untrusted values and,
+over any `dict`-like object mapping keys to values, containing untrusted values and,
 optionally, even untrusted keys.
+
+* Looks like a native `dict`.
+* Feels like a native `dict`.
+* All accessed values, and optionally keys, are wrapped by an `untrusted.*` type.
 
 #### Nested containers
 
