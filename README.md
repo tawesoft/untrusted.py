@@ -1,6 +1,6 @@
 # untrusted.py
 
-TODO not yet finished
+TODO full tests
 
 
 **Write safer Python with special untrusted types.**
