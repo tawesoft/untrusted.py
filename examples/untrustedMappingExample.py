@@ -28,17 +28,14 @@ people = [
 
 # a list of dicts with trusted keys, but untrusted values
 mappingType = untrusted.iteratorOf(untrusted.mapping)
-print("repr(mappingType(people)): %s" % repr(mappingType(people)))
+
+# aka (setting defaults explicitly)
+mappingType = untrusted.iteratorOf(untrusted.mappingOf(str, untrusted.string))
+
 
 for person in mappingType(people):
-    print("repr(person): %s" % repr(person))
     for key, value in person.items():
-        try:
-            print("    %s = %s" % (key, value))
-        except TypeError:
-            # not allowed!
-            pass
-        print("    %s: repr(value)=%s" % (key, repr(value)))
+        print("    %s: %s" % (key, value.escape(html.escape)))
     
 
 

@@ -109,26 +109,51 @@ over any `dict`-like object mapping trusted or untrusted keys to untrusted value
 
 Lazily nested containers are fully supported, too.
 
-Use `untrusted.iteratorOf` or `untrusted.sequenceOf` to create a specific
+Use `untrusted.iteratorOf(valueType)`, `untrusted.sequenceOf(valueType)`, or
+`untrusted.mappingOf(keyType, valueType)` to create a specific
 container type.
 
-Example:
+    Example:
 
-    someValues = [
-        ["apple","banana","orange", "pineapple"],
-        ["cat", "dog", "monkey", "elephant"],
-        ["green", "yellow", "blue", "rainbow"],
+    import html # for html.escape
+    import untrusted
+
+    people = [
+        {
+            'id':           'A101',
+            'name.first':   'Grace',
+            'name.last':    'Hopper',
+            'name.other':   'Brewster Murray',
+            'dob':          '1906-12-09',
+        },
+        {
+            'id':           'A102',
+            'name.first':   'Alan',
+            'name.last':    'Turing',
+            'name.other':   'Mathison',
+            'dob':          '1912-06-23',
+        },
+        {
+            'id':           'HACKER',
+            'name.first':   'Robert\'); DROP TABLE Students;--',
+            'name.last':    '£Hacker',
+            'dob':          '<b>Potato</b>'
+        },
     ]
 
-    seqType = untrusted.sequenceOf(untrusted.sequence)
-    catagories = seqType(someValues)
 
-    # or alternatively
-    catagories = untrusted.sequenceOf(untrusted.sequence)(someValues)
+    # a list of dicts with trusted keys, but untrusted values
+    mappingType = untrusted.iteratorOf(untrusted.mapping)
 
-    for catagory in catagories:
-        for item in catagory:
-            print(item.escape(someEscapeMethod, ...))
+    # aka (setting defaults explicitly)
+    mappingType = untrusted.iteratorOf(untrusted.mappingOf(str, untrusted.string))
+
+    for person in mappingType(people):
+    print("Record %s" % person.get('id').escape(html))
+            print("    %s: %s" % (key, value.escape(html)))
+        
+
+
 
 
 

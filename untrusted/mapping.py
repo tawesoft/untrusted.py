@@ -24,6 +24,7 @@ class _incompleteMappingType(collections.abc.Mapping):
     # that must be wrapped by the valueType
     _simple_wrapped_methods = set([
         "__missing__",
+        "__getitem__",
         "get",
         "pop",
         "setdefault",
@@ -73,10 +74,6 @@ class _incompleteMappingType(collections.abc.Mapping):
     def __repr__(self):
         return "<untrusted.mapping of type %s to type %s>" % (repr(self._keyType), repr(self._valueType))
 
-    def __getitem__(self, key):
-        key = untrusted.util._wrap_arg(key)
-        return self._valueType(self.obj[key])
-
     def __getattr__(self, name):
         return untrusted.util._wrapped_method(self, name)
 
@@ -92,7 +89,7 @@ class _incompleteMappingType(collections.abc.Mapping):
 
 
 mapping = type('mapping', (_incompleteMappingType,), untrusted.util._createMagicPassthroughBindings(
-    ["bool", "contains", "delitem", "len", "length_hint", "missing", "setitem", "reversed"]
+    ["bool", "contains", "delitem", "len", "length_hint", "missing", "getitem", "setitem", "reversed"]
 ))
 
 

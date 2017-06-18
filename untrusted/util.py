@@ -12,7 +12,7 @@ def _to_untrusted_mapping(xs, keyType, valueType):
     return untrusted.mapping(xs, keyType=keyType, valueType=valueType)
 
 def _to_untrusted_tuple_of_strings(xs, keyType, valueType):
-    assert isinstance(valueType, untrusted.string) or valueType is None
+    assert isinstance(valueType, untrusted.string) or valueType is untrusted.string
     return tuple(map(untrusted.string, xs))
 
 
@@ -82,7 +82,7 @@ def _simple_method_wrapper(self, fn):
         _args, _kwargs = _wrap_args(*args), _wrap_kwargs(**kwargs)
         result = fn(*_args, **_kwargs)
         if result is None: return None
-        return self.__class__(result)
+        return self._valueType(result)
 
     return wrapper
 
@@ -131,7 +131,6 @@ def _createMagicPassthroughBindings(names):
         name = "__%s__" % name
         result[name] = _bindPassthroughMethod(name)
 
-    print(result)
     return result
 
 

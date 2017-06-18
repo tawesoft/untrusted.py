@@ -6,7 +6,7 @@ import untrusted.util
 
 class _incompleteStringType:
     _keyType = TypeError # NA
-    _valueType = None # (would be a circular reference if defined)
+    _valueType = None # set later (circular reference)
 
     # when calling `repr(untrusted.string)`, unicode is escaped and converted
     # to ASCII. Then all symbols not in `_repr_whitelist` are replaced with
@@ -140,5 +140,7 @@ class _incompleteStringType:
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
     ["add", "bool", "eq", "gt", "gte", "len", "lt", "lte", "neq"]
 ))
+string._valueType = string
+
 
 
