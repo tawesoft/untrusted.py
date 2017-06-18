@@ -4,6 +4,7 @@ import collections.abc
 
 class iterator(collections.abc.Iterable):
 
+    _keyType = TypeError # NA
     _valueType = untrusted.string
 
     def __init__(self, value, valueType=None):
@@ -26,7 +27,7 @@ class iterator(collections.abc.Iterable):
 
 def iteratorOf(valueType):
     """Dynamically creates a new iterator type for use in the valueType argument
-       of the iterator constructor."""
+       of any untrusted iterator/collection constructor."""
 
     assert isinstance(valueType, type), "iteratorOf expects a type, not a value"
     return type('iterableOf.'+valueType.__module__+'.'+valueType.__name__, (iterator,),{"_valueType": valueType})

@@ -159,6 +159,19 @@ this might be a list of reasons why the input didn't valdiate), or to throw
 a `ValueError` from a function that both escapes and validates.
 
 
+### Use the best tool for the job
+
+Sometimes, you generate HTML yourself and escaping is something you need to do.
+
+Sometimes, an interface *always* separates parameters from code, like most
+modern SQL libraries. In this case the database driver will handle potentially
+untrusted input better than you ever could hope to, and escaping it is the
+wrong thing to do.
+
+You might mark the input as untrusted for other reasons - e.g. to enforce a
+maximum length on a search query.
+
+
 ### Using untrusted collection types
 
 Untrusted collection types, like `untrusted.sequence`, are

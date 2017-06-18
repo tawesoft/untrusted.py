@@ -1,9 +1,20 @@
 import collections.abc
+import string
 import untrusted
 import untrusted.util
 
 
 class _incompleteStringType:
+    _keyType = TypeError # NA
+    _valueType = None # (would be a circular reference if defined)
+
+    # when calling `repr(untrusted.string)`, unicode is escaped and converted
+    # to ASCII. Then all symbols not in `_repr_whitelist` are replaced with
+    # `_repr_replace`. Values longer than _repr_maxlen are truncated.
+    _repr_whitelist = string.ascii_letters + string.digits + ' '
+    _repr_replace = '.'
+    _repr_maxlen = 128 # must be >= 3
+
     _cast_error = "Implicit cast to/of untrusted.string is not allowed"
 
     # whitelist of methods to wrap that return a simple value e.g. boolean
@@ -89,7 +100,18 @@ class _incompleteStringType:
         raise TypeError(self._cast_error)
 
     def __repr__(self):
-        return "<untrusted.string: %s>" % repr(self.value)
+        # in case a repr gets printed by accident, ensure even the preview
+        # is escaped
+        value = self.value.encode('unicode_escape').decode('latin-1')
+        value = ''.join(map(lambda x: x if x in self._repr_whitelist else self._repr_replace, value))
+
+        if len(value) > self._repr_maxlen:
+            value = value[self._repr_maxlen - 3] + "..."
+
+        if (value != self.value):
+            return "<untrusted.string: (escaped/sanitised/truncated) %s>" % repr(value)
+        else:
+            return "<untrusted.string: %s>" % repr(value)
 
     @property
     def value(self):

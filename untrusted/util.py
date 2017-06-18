@@ -2,15 +2,19 @@ import collections.abc
 import untrusted
 
 
-def _to_untrusted_list(xs, valueType):
-    return untrusted.sequence(xs, valueType=valueType)
-
-def _to_untrusted_iterator(xs, valueType):
+def _to_untrusted_iterator(xs, keyType, valueType):
     return untrusted.iterator(xs, valueType=valueType)
 
-def _to_untrusted_tuple_of_strings(xs, valueType):
-    assert isinstance(valueType, untrusted.string)
-    return tuple(map(string, xs))
+def _to_untrusted_list(xs, keyType, valueType):
+    return untrusted.sequence(xs, valueType=valueType)
+
+def _to_untrusted_mapping(xs, keyType, valueType):
+    return untrusted.mapping(xs, keyType=keyType, valueType=valueType)
+
+def _to_untrusted_tuple_of_strings(xs, keyType, valueType):
+    assert isinstance(valueType, untrusted.string) or valueType is None
+    return tuple(map(untrusted.string, xs))
+
 
 
 def _wrap_arg(arg):
@@ -92,7 +96,7 @@ def _complex_method_wrapper(self, result_wrapper, fn):
     def wrapper(*args, **kwargs):
         _args, _kwargs = _wrap_args(*args), _wrap_kwargs(**kwargs)
         result = fn(*_args, **_kwargs)
-        return result_wrapper(result, self._valueType)
+        return result_wrapper(result, self._keyType, self._valueType)
 
     return wrapper
 

@@ -58,11 +58,17 @@ print("repr(c.partition(',')): %s" % repr(c.partition(',')))
 
 # Or an `untrusted.sequence` of `untrusted.string` values.
 things = untrusted.string("apple, banana, orange, mango")
+
 print("repr(things): %s" % repr(things))
 
 things = untrusted.string("apple, banana, orange, mango")
-print("repr(things.split(','): %s" % repr(things.split(',', maxsplit=1)))
+print("repr(things.split(','): %s" % repr(things.split(',')))
+for i in things.split(','):
+    print("    " + repr(i))
+
 print("repr(things.split(',', maxsplit=1)): %s" % repr(things.split(',', maxsplit=1)))
+for i in things.split(',', maxsplit=1):
+    print("    " + repr(i))
 
 
 # You can access the raw value by using the (read-only)  `value` property
