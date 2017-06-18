@@ -28,6 +28,7 @@ or via the repo on GitHub
 
 **Example of handling untrusted HTML:**
 
+```python
 
     import html # for html.escape()
     import untrusted
@@ -42,9 +43,12 @@ or via the repo on GitHub
 
     print("Escaped output: %s" % inputString.escape(html.escape)) # prints safe HTML!
 
+```
+
 
 **Example of handling untrusted shell input potentially containing [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code):**
 
+```python
 
     # Try it out:
     # echo -e "\033[0;31mHacker!" | python3 ./example.py
@@ -71,6 +75,8 @@ or via the repo on GitHub
         print("Can't safely print(reply)!")
 
     print("Escaped output: %s" % reply.escape(strip_nonprintable))
+
+```
 
 
 ### Untrusted collection types
@@ -113,7 +119,9 @@ Use `untrusted.iteratorOf(valueType)`, `untrusted.sequenceOf(valueType)`, or
 `untrusted.mappingOf(keyType, valueType)` to create a specific
 container type.
 
-    Example:
+Example:
+
+```python
 
     import html # for html.escape
     import untrusted
@@ -148,13 +156,12 @@ container type.
     # aka (setting defaults explicitly)
     mappingType = untrusted.iteratorOf(untrusted.mappingOf(str, untrusted.string))
 
+
     for person in mappingType(people):
-    print("Record %s" % person.get('id').escape(html))
-            print("    %s: %s" % (key, value.escape(html)))
-        
+        for key, value in person.items():
+            print("    %s: %s" % (key, value.escape(html.escape)))
 
-
-
+```   
 
 
 ## Notes of Caution
