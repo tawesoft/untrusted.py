@@ -29,53 +29,18 @@ or via the repo on GitHub
 **Example of handling untrusted HTML:**
 
 ```python
+import html # for html.escape()
+import untrusted
 
-    import html # for html.escape()
-    import untrusted
+# example of a string that could be provided by an untrusted user
+inputString = untrusted.string("<script>alert('hack attempt!');</script>")
 
-    # example of a string that could be provided by an untrusted user
-    inputString = untrusted.string("<script>alert('hack attempt!');</script>")
+try:
+    print(inputString) # raises TypeError - untrusted.string used as a `str`!
+except TypeError:
+    print("Can't safely print(inputString)!")
 
-    try:
-        print(inputString) # raises TypeError - untrusted.string used as a `str`!
-    except TypeError:
-        print("Can't safely print(inputString)!")
-
-    print("Escaped output: %s" % inputString.escape(html.escape)) # prints safe HTML!
-
-```
-
-
-**Example of handling untrusted shell input potentially containing [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code):**
-
-```python
-
-    # Try it out:
-    # echo -e "\033[0;31mHacker!" | python3 ./example.py
-
-    import untrusted
-
-    def strip_nonprintable(x):
-        return ''.join(filter(lambda x: x.isprintable(), x))
-
-    # prompt user for input
-    print("What is your name?")
-    name = untrusted.string(input())
-
-    # combine it naturally with a native `str` - no error here yet!
-    # It's only when you *use* the untrusted.string that the error occurs
-    reply = "Hello " + name
-
-    # This is because by combining an `untrusted.string` with a `str`, you
-    # get an `untrusted.string` as a result.
-
-    try:
-        print(reply) # raises TypeError - untrusted.string used as a `str`!
-    except TypeError:
-        print("Can't safely print(reply)!")
-
-    print("Escaped output: %s" % reply.escape(strip_nonprintable))
-
+print("Escaped output: %s" % inputString.escape(html.escape)) # prints safe HTML!
 ```
 
 
@@ -122,45 +87,43 @@ container type.
 Example:
 
 ```python
+import html # for html.escape
+import untrusted
 
-    import html # for html.escape
-    import untrusted
-
-    people = [
-        {
-            'id':           'A101',
-            'name.first':   'Grace',
-            'name.last':    'Hopper',
-            'name.other':   'Brewster Murray',
-            'dob':          '1906-12-09',
-        },
-        {
-            'id':           'A102',
-            'name.first':   'Alan',
-            'name.last':    'Turing',
-            'name.other':   'Mathison',
-            'dob':          '1912-06-23',
-        },
-        {
-            'id':           'HACKER',
-            'name.first':   'Robert\'); DROP TABLE Students;--',
-            'name.last':    '£Hacker',
-            'dob':          '<b>Potato</b>'
-        },
-    ]
-
-
-    # a list of dicts with trusted keys, but untrusted values
-    mappingType = untrusted.iteratorOf(untrusted.mapping)
-
-    # aka (setting defaults explicitly)
-    mappingType = untrusted.iteratorOf(untrusted.mappingOf(str, untrusted.string))
+people = [
+    {
+        'id':           'A101',
+        'name.first':   'Grace',
+        'name.last':    'Hopper',
+        'name.other':   'Brewster Murray',
+        'dob':          '1906-12-09',
+    },
+    {
+        'id':           'A102',
+        'name.first':   'Alan',
+        'name.last':    'Turing',
+        'name.other':   'Mathison',
+        'dob':          '1912-06-23',
+    },
+    {
+        'id':           'HACKER',
+        'name.first':   'Robert\'); DROP TABLE Students;--',
+        'name.last':    '£Hacker',
+        'dob':          '<b>Potato</b>'
+    },
+]
 
 
-    for person in mappingType(people):
-        for key, value in person.items():
-            print("    %s: %s" % (key, value.escape(html.escape)))
+# a list of dicts with trusted keys, but untrusted values
+mappingType = untrusted.sequenceOf(untrusted.mapping)
 
+# aka (setting defaults explicitly)
+mappingType = untrusted.sequenceOf(untrusted.mappingOf(str, untrusted.string))
+
+
+for person in mappingType(people):
+    for key, value in person.items():
+        print("    %s: %s" % (key, value.escape(html.escape)))
 ```   
 
 
