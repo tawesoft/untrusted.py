@@ -11,6 +11,8 @@ Tested for Python >= 3.4, but earlier versions may work.
 
 ### Get Untrusted
 
+TODO this isn't on pip just yet
+
     pip install untrusted
 
 or

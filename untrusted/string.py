@@ -1,5 +1,5 @@
 import collections.abc
-import string
+import string as stringmodule
 import untrusted
 import untrusted.util
 
@@ -11,7 +11,7 @@ class _incompleteStringType:
     # when calling `repr(untrusted.string)`, unicode is escaped and converted
     # to ASCII. Then all symbols not in `_repr_whitelist` are replaced with
     # `_repr_replace`. Values longer than _repr_maxlen are truncated.
-    _repr_whitelist = string.ascii_letters + string.digits + ' '
+    _repr_whitelist = stringmodule.ascii_letters + stringmodule.digits + ' '
     _repr_replace = '.'
     _repr_maxlen = 128 # must be >= 3
 
@@ -27,6 +27,7 @@ class _incompleteStringType:
         '__lt__',
         '__lte__',
         '__neq__',
+        '__contains__',
         'count',
         'endswith',
         'find',
@@ -51,6 +52,9 @@ class _incompleteStringType:
     _simple_wrapped_methods = set([
         '__add__',
         '__radd__',
+        '__mul__',
+        '__rmul__',
+        '__getitem__',
         'capitalize',
         'casefold',
         'center',
@@ -74,6 +78,7 @@ class _incompleteStringType:
     # list of strings, and we want them to be all wrapped by an appropriate
     # untrusted type
     _complex_wrapped_methods = {
+        '__reversed__': untrusted.util._to_untrusted_iterator,
         'partition':    untrusted.util._to_untrusted_tuple_of_strings, # returns a 3-tuple
         'rpartition':   untrusted.util._to_untrusted_tuple_of_strings, # returns a 3-tuple
         'split':        untrusted.util._to_untrusted_list,
@@ -94,8 +99,12 @@ class _incompleteStringType:
     def __radd__(self, *args):
         # underlying str doesn't implement __radd__ for us to wrap
         other, *_ = untrusted.util._wrap_args(*args)
-        return self.__class__(other + self.value)
+        return self._valueType(other + self.value)
     
+    def __reversed__(self):
+        # underlying str doesn't have __reversed__ for us to wrap
+        return untrusted.iterator(reversed(self.value))
+
     def __str__(self):
         raise TypeError(self._cast_error)
 
@@ -138,7 +147,7 @@ class _incompleteStringType:
 # not picked up when operator overloading
 
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
-    ["add", "bool", "eq", "gt", "gte", "len", "lt", "lte", "neq"]
+    ["add", "contains", "bool", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "neq", "rmul"]
 ))
 string._valueType = string
 
