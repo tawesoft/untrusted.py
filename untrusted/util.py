@@ -12,8 +12,8 @@ def _to_untrusted_mapping(xs, keyType, valueType):
     return untrusted.mapping(xs, keyType=keyType, valueType=valueType)
 
 def _to_untrusted_tuple_of_strings(xs, _keyType, valueType):
-    assert isinstance(valueType, untrusted.string) or valueType is untrusted.string
-    return tuple(map(untrusted.string, xs))
+    assert issubclass(valueType, untrusted.string)
+    return tuple(map(valueType, xs))
 
 
 # For all arguments to `untrusted.*` methods, we want `untrusted.*` argument

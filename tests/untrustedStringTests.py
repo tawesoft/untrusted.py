@@ -13,8 +13,7 @@ import html
 
 
 class customstring(untrusted.string):
-    def toHtml(self): # example
-        return html.escape(self.value)
+    pass
 
 
 def same(a, b):
@@ -211,6 +210,12 @@ assert same(untrusted.string('').join(untrusted.string("cat")), untrusted.string
 # to be certain that an untrusted.string doesn't ever leak into a normal str
 try:
     _ = ''.join(untrusted.string("hello"))
+    raise AssertionError
+except TypeError:
+    pass # expected
+
+try:
+    _ = ''.join(customstring("hello"))
     raise AssertionError
 except TypeError:
     pass # expected
@@ -480,46 +485,115 @@ assert untrusted.string("123").isprintable()
 assert not "\01".isprintable()
 assert not untrusted.string("\01").isprintable()
 
+# str.isspace()
+assert "    \t\r\n".isspace()
+assert untrusted.string("    \t\r\n").isspace()
+assert not "cat".isspace()
+assert not untrusted.string("cat").isspace()
+
+# str.istitle()
+assert "Hello World".istitle()
+assert untrusted.string("Hello World").istitle()
+assert not "hello world".istitle()
+assert not untrusted.string("hello world").istitle()
+
+# str.isupper()
+assert "CAT".isupper()
+assert untrusted.string("CAT").isupper()
+assert not "cat".isupper()
+assert not untrusted.string("cat").isupper()
+
+# str.join(iterable) - done
+
+# str.ljust(width[, fillchar])
+assert same("CAT".ljust(8, "-"), "CAT-----")
+assert same(untrusted.string("CAT").ljust(8, "-"), untrusted.string("CAT-----"))
+
+# str.lower()
+assert same("Cat".lower(), "cat")
+assert same(untrusted.string("Cat").lower(), untrusted.string("cat"))
+
+# str.lstrip([chars])
+assert same(" cat".lstrip(), "cat")
+assert same(untrusted.string(" cat".lstrip()), untrusted.string("cat"))
+assert same(" cat".lstrip(" ca"), "t")
+assert same(untrusted.string(" cat").lstrip(" ca"), untrusted.string("t"))
+assert same(untrusted.string(" cat").lstrip(untrusted.string(" ca")), untrusted.string("t"))
+assert same(untrusted.string(" cat").lstrip(customstring(" ca")), untrusted.string("t"))
+
+
+# str.partition(sep)
+
+# no result
+parts = "cat,dog,mouse".partition("X")
+a, b, c = parts
+assert same(a, "cat,dog,mouse")
+assert same(b, "")
+assert same(c, "")
+
+parts = untrusted.string("cat,dog,mouse").partition("X")
+a, b, c = parts
+assert same(a, untrusted.string("cat,dog,mouse"))
+assert same(b, untrusted.string(""))
+assert same(c, untrusted.string(""))
+
+parts = untrusted.string("cat,dog,mouse").partition(untrusted.string("X"))
+a, b, c = parts
+assert same(a, untrusted.string("cat,dog,mouse"))
+assert same(b, untrusted.string(""))
+assert same(c, untrusted.string(""))
+
+parts = customstring("cat,dog,mouse").partition(untrusted.string("X"))
+a, b, c = parts
+assert same(a, customstring("cat,dog,mouse"))
+assert same(b, customstring(""))
+assert same(c, customstring(""))
+
+parts = untrusted.string("cat,dog,mouse").partition(customstring("X"))
+a, b, c = parts
+assert same(a, untrusted.string("cat,dog,mouse"))
+assert same(b, untrusted.string(""))
+assert same(c, untrusted.string(""))
+
+# result
+parts = "cat,dog,mouse".partition(",")
+a, b, c = parts
+assert same(a, "cat")
+assert same(b, ",")
+assert same(c, "dog,mouse")
+
+parts = untrusted.string("cat,dog,mouse").partition(",")
+a, b, c = parts
+assert same(a, untrusted.string("cat"))
+assert same(b, untrusted.string(","))
+assert same(c, untrusted.string("dog,mouse"))
+
+parts = untrusted.string("cat,dog,mouse").partition(untrusted.string(","))
+a, b, c = parts
+assert same(a, untrusted.string("cat"))
+assert same(b, untrusted.string(","))
+assert same(c, untrusted.string("dog,mouse"))
+
+parts = customstring("cat,dog,mouse").partition(untrusted.string(","))
+a, b, c = parts
+assert same(a, customstring("cat"))
+assert same(b, customstring(","))
+assert same(c, customstring("dog,mouse"))
+
+parts = untrusted.string("cat,dog,mouse").partition(customstring(","))
+a, b, c = parts
+assert same(a, untrusted.string("cat"))
+assert same(b, untrusted.string(","))
+assert same(c, untrusted.string("dog,mouse"))
+
+
+# TODO str % thing
+
+
+# TODO tests for:
 '''
+TODO
 
-
-str.isspace()
-Return true if there are only whitespace characters in the string and there is at least one character, false otherwise. Whitespace characters are those characters defined in the Unicode character database as “Other” or “Separator” and those with bidirectional property being one of “WS”, “B”, or “S”.
-
-str.istitle()
-Return true if the string is a titlecased string and there is at least one character, for example uppercase characters may only follow uncased characters and lowercase characters only cased ones. Return false otherwise.
-
-str.isupper()
-Return true if all cased characters [4] in the string are uppercase and there is at least one cased character, false otherwise.
-
-str.join(iterable)
-Return a string which is the concatenation of the strings in the iterable iterable. A TypeError will be raised if there are any non-string values in iterable, including bytes objects. The separator between elements is the string providing this method.
-
-str.ljust(width[, fillchar])
-Return the string left justified in a string of length width. Padding is done using the specified fillchar (default is an ASCII space). The original string is returned if width is less than or equal to len(s).
-
-str.lower()
-Return a copy of the string with all the cased characters [4] converted to lowercase.
-
-The lowercasing algorithm used is described in section 3.13 of the Unicode Standard.
-
-str.lstrip([chars])
-Return a copy of the string with leading characters removed. The chars argument is a string specifying the set of characters to be removed. If omitted or None, the chars argument defaults to removing whitespace. The chars argument is not a prefix; rather, all combinations of its values are stripped:
-
->>>
->>> '   spacious   '.lstrip()
-'spacious   '
->>> 'www.example.com'.lstrip('cmowz.')
-'example.com'
-static str.maketrans(x[, y[, z]])
-This static method returns a translation table usable for str.translate().
-
-If there is only one argument, it must be a dictionary mapping Unicode ordinals (integers) or characters (strings of length 1) to Unicode ordinals, strings (of arbitrary lengths) or None. Character keys will then be converted to ordinals.
-
-If there are two arguments, they must be strings of equal length, and in the resulting dictionary, each character in x will be mapped to the character at the same position in y. If there is a third argument, it must be a string, whose characters will be mapped to None in the result.
-
-str.partition(sep)
-Split the string at the first occurrence of sep, and return a 3-tuple containing the part before the separator, the separator itself, and the part after the separator. If the separator is not found, return a 3-tuple containing the string itself, followed by two empty strings.
 
 str.replace(old, new[, count])
 Return a copy of the string with all occurrences of substring old replaced by new. If the optional argument count is given, only the first count occurrences are replaced.
