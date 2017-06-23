@@ -25,6 +25,9 @@ class iterator(collections.abc.Iterable):
         return "<untrusted.iterator of type %s>" % repr(self._valueType)
 
 
+Iterator = iterator
+
+
 def iteratorOf(valueType):
     """Dynamically creates a new iterator type for use in the valueType argument
        of any untrusted iterator/collection constructor."""

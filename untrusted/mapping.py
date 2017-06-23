@@ -88,9 +88,15 @@ class _incompleteMappingType(collections.abc.Mapping):
         return self._value
 
 
+
+# we dynamically create the actual untrusted.mapping class from the above class
+# with some magic to let us easily passthrough magic methods that are otherwise
+# not picked up when operator overloading
+
 mapping = type('mapping', (_incompleteMappingType,), untrusted.util._createMagicPassthroughBindings(
     ["bool", "contains", "delitem", "len", "length_hint", "missing", "getitem", "setitem", "reversed"]
 ))
+Mapping = mapping
 
 
 def mappingOf(keyType, valueType):

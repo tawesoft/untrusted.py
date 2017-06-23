@@ -2,21 +2,22 @@ import collections.abc
 import untrusted
 
 
-def _to_untrusted_iterator(xs, keyType, valueType):
+def _to_untrusted_iterator(xs, _keyType, valueType):
     return untrusted.iterator(xs, valueType=valueType)
 
-def _to_untrusted_list(xs, keyType, valueType):
+def _to_untrusted_list(xs, _keyType, valueType):
     return untrusted.sequence(xs, valueType=valueType)
 
 def _to_untrusted_mapping(xs, keyType, valueType):
     return untrusted.mapping(xs, keyType=keyType, valueType=valueType)
 
-def _to_untrusted_tuple_of_strings(xs, keyType, valueType):
+def _to_untrusted_tuple_of_strings(xs, _keyType, valueType):
     assert isinstance(valueType, untrusted.string) or valueType is untrusted.string
     return tuple(map(untrusted.string, xs))
 
 
-
+# For all arguments to `untrusted.*` methods, we want `untrusted.*` argument
+# values treated interchangably with native arguments.
 def _wrap_arg(arg):
     if isinstance(arg, untrusted.string):
         return arg.value

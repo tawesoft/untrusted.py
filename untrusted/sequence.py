@@ -72,9 +72,15 @@ class _incompleteSequenceType(collections.abc.Container):
         return self._value
 
 
+
+# we dynamically create the actual untrusted.sequence class from the above class
+# with some magic to let us easily passthrough magic methods that are otherwise
+# not picked up when operator overloading
+
 sequence = type('sequence', (_incompleteSequenceType,), untrusted.util._createMagicPassthroughBindings(
     ["bool", "contains", "delitem", "len", "length_hint", "missing", "getitem", "setitem", "reversed"]
 ))
+Sequence = sequence
 
 
 def sequenceOf(valueType):

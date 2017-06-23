@@ -6,7 +6,6 @@ import untrusted.util
 
 class _incompleteStringType:
     _keyType = TypeError # NA
-    _valueType = None # set later (circular reference)
 
     # when calling `repr(untrusted.string)`, unicode is escaped and converted
     # to ASCII. Then all symbols not in `_repr_whitelist` are replaced with
@@ -92,8 +91,11 @@ class _incompleteStringType:
         return untrusted.util._wrapped_method(self, name)
 
     def __init__(self, value):
-        assert value is not None
-        assert isinstance(value, str), "Expected str. got %s" % repr(type(value))
+        if isinstance(value, untrusted.string):
+            value = value.value
+        if not isinstance(value, str):
+            raise TypeError("Initialiser for an untrusted string must be an instance of str or untrusted.string")
+
         self._value = value
 
     def __radd__(self, *args):
@@ -127,6 +129,10 @@ class _incompleteStringType:
         """Read only access to the raw `str` value."""
         return self._value
 
+    @property
+    def _valueType(self):
+        return type(self)
+
     def escape(self, fn, *args, **kwargs) -> str:
         result = fn(self.value, *args, **kwargs)
         assert isinstance(result, str)
@@ -149,7 +155,7 @@ class _incompleteStringType:
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
     ["add", "contains", "bool", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "neq", "rmul"]
 ))
-string._valueType = string
+String = string
 
 
 

@@ -4,18 +4,25 @@
 # * accepts `str` and/or `untrusted.string` arguments interchangeably
 # * never returns `str` or any iterable of `str`, only an
 #   appropriate `untrusted.*` type.
+# Also tests that subclassed instances of untrusted.string work
 
 
 import untrusted
 from sys import stderr
+import html
+
+
+class customstring(untrusted.string):
+    def toHtml(self): # example
+        return html.escape(self.value)
 
 
 def same(a, b):
     if type(a) != type(b):
         return False
-    if type(a) is untrusted.string:
+    if isinstance(a, untrusted.string):
         a = a.value
-    if type(b) is untrusted.string:
+    if isinstance(b, untrusted.string):
         b = b.value
     if a != b:
         return False
@@ -35,7 +42,17 @@ assert not same("cat", untrusted.string("cat"))
 assert not same("cat", None)
 assert not same(untrusted.string("cat"), None)
 
+assert not same(untrusted.string("cat"), customstring("cat"))
+
 assert same(None, None)
+
+
+# Test an untrusted.string is never None!
+try:
+    _ = untrusted.string(None)
+    raise AssertionError
+except TypeError:
+    pass
 
 
 # Test an untrusted.string doesn't print!
@@ -44,6 +61,15 @@ try:
     raise AssertionError
 except TypeError:
     pass # expected!
+
+
+# Test the subclassed string doesn't print!
+try:
+    print(customstring("Hello"))
+    raise AssertionError
+except TypeError:
+    pass # expected!
+
 
 
 # "Strings implement all of the common sequence operations"
@@ -63,6 +89,9 @@ assert "cat" in "dogcatmouse"
 assert "cat" in untrusted.string("dogcatmouse")
 assert untrusted.string("cat") in untrusted.string("dogcatmouse")
 
+assert customstring("a") in untrusted.string("cat")
+assert untrusted.string("a") in customstring("a")
+
 
 # membership: x not in s
 assert "b" not in "cat"
@@ -73,6 +102,8 @@ assert not ("a" not in "cat")
 assert not ("a" not in untrusted.string("cat"))
 assert not (untrusted.string("a") not in untrusted.string("cat"))
 
+assert customstring("b") not in untrusted.string("cat")
+
 
 # concatenation: s + t
 assert same("cat"+"dog", "catdog")
@@ -80,18 +111,23 @@ assert same(untrusted.string("cat") + "dog", untrusted.string("catdog"))
 assert same("cat" + untrusted.string("dog"), untrusted.string("catdog"))
 assert same(untrusted.string("cat") + untrusted.string("dog"), untrusted.string("catdog"))
 
+# concatination with subclasses - becomes left-most class
+assert same(untrusted.string("a") + customstring("b"), untrusted.string("ab"))
+assert same(customstring("a") + untrusted.string("b"), customstring("ab"))
+
 
 # s * n or n * s - "equivalent to adding s to itself n times"
 assert same(3*"cat", "catcatcat")
 assert same(3*untrusted.string("cat"), untrusted.string("catcatcat"))
+assert same(3*customstring("cat"), customstring("catcatcat"))
 assert same("cat"*3, "catcatcat")
 assert same(untrusted.string("cat")*3, untrusted.string("catcatcat"))
+assert same(customstring("cat")*3, customstring("catcatcat"))
 
 assert same(0*"cat", "")
 assert same(0*untrusted.string("cat"), untrusted.string(""))
 assert same("cat"*0, "")
 assert same(untrusted.string("cat")*0, untrusted.string(""))
-
 
 # s[i] - item at index i
 assert same("cat"[1], "a")
@@ -116,8 +152,11 @@ except IndexError:
 # s[i:j:k] - slice i to j with step k
 assert same("dogcatmouse"[3:6], "cat")
 assert same(untrusted.string("dogcatmouse")[3:6], untrusted.string("cat"))
+assert same(customstring("dogcatmouse")[3:6], customstring("cat"))
+
 assert same("dogcatmouse"[3:6:2], "ct")
 assert same(untrusted.string("dogcatmouse")[3:6:2], untrusted.string("ct"))
+assert same(customstring("dogcatmouse")[3:6:2], customstring("ct"))
 
 
 # len(s)
@@ -417,29 +456,32 @@ assert not untrusted.string("cat").isdecimal()
 assert "2²".isdigit()
 assert untrusted.string("2²").isdigit()
 
-
-# str.isidentifier
+# str.isidentifier()
 assert "hello".isidentifier()
-assert untrusted.string("hello".isidenfitier())
+assert untrusted.string("hello").isidentifier()
 assert not "123".isidentifier()
 assert not untrusted.string("123").isidentifier()
 
 # str.islower()
+assert "hello".islower()
+assert untrusted.string("hello").islower()
+assert not "Hello".islower()
+assert not untrusted.string("Hello").islower()
 
+# str.isnumeric()
+assert "123".isnumeric()
+assert untrusted.string("123").isnumeric()
+assert not "hello".isnumeric()
+assert not untrusted.string("hello").isnumeric()
 
+# str.isprintable()
+assert "123".isprintable()
+assert untrusted.string("123").isprintable()
+assert not "\01".isprintable()
+assert not untrusted.string("\01").isprintable()
 
 '''
 
-TODO
-
-str.islower()
-Return true if all cased characters [4] in the string are lowercase and there is at least one cased character, false otherwise.
-
-str.isnumeric()
-Return true if all characters in the string are numeric characters, and there is at least one character, false otherwise. Numeric characters include digit characters, and all characters that have the Unicode numeric value property, e.g. U+2155, VULGAR FRACTION ONE FIFTH. Formally, numeric characters are those with the property value Numeric_Type=Digit, Numeric_Type=Decimal or Numeric_Type=Numeric.
-
-str.isprintable()
-Return true if all characters in the string are printable or the string is empty, false otherwise. Nonprintable characters are those characters defined in the Unicode character database as “Other” or “Separator”, excepting the ASCII space (0x20) which is considered printable. (Note that printable characters in this context are those which should not be escaped when repr() is invoked on a string. It has no bearing on the handling of strings written to sys.stdout or sys.stderr.)
 
 str.isspace()
 Return true if there are only whitespace characters in the string and there is at least one character, false otherwise. Whitespace characters are those characters defined in the Unicode character database as “Other” or “Separator” and those with bidirectional property being one of “WS”, “B”, or “S”.
