@@ -44,14 +44,16 @@ fullName = firstName + " " + lastName
 # fullName keeps the untrusted.string type
 print(repr(fullName)) # <untrusted.string of length 46>
 
-# but the normal string methods still work as you would expect
+# the normal string methods still work as you would expect
 fullName = fullName.title()
 
+# but you can't accidentally use it where a `str` is expected
 try:
     print(fullName) # raises TypeError - untrusted.string used as a `str`!
 except TypeError:
     print("Can't safely print(inputString)!")
 
+# instead, you are forced to explicitly escape your string somehow
 print("<b>Escaped output:</b> " + fullName.escape(html.escape)) # prints safe HTML!
 print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorthand!
 ```
