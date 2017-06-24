@@ -42,7 +42,7 @@ lastName = untrusted.string("<script>alert('hack attempt!');</script>")
 fullName = firstName + " " + lastName
 
 # fullName keeps the untrusted.string type
-print(repr(fullName)) # <untrusted.string of length >
+print(repr(fullName)) # <untrusted.string of length 46>
 
 try:
     print(fullName) # raises TypeError - untrusted.string used as a `str`!
