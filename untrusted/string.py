@@ -1,19 +1,10 @@
 import collections.abc
-import string as stringmodule
 import untrusted
 import untrusted.util
 
 
 class _incompleteStringType:
     _keyType = TypeError # NA
-
-    # when calling `repr(untrusted.string)`, unicode is escaped and converted
-    # to ASCII. Then all symbols not in `_repr_whitelist` are replaced with
-    # `_repr_replace`. Values longer than _repr_maxlen are truncated.
-    _repr_whitelist = stringmodule.ascii_letters + stringmodule.digits + ' '
-    _repr_replace = '.'
-    _repr_maxlen = 128 # must be >= 3
-
     _cast_error = "Implicit cast to/of untrusted.string is not allowed"
 
     # whitelist of methods to wrap that return a simple value e.g. boolean
@@ -27,6 +18,7 @@ class _incompleteStringType:
         '__lte__',
         '__ne__',
         '__contains__',
+        '__hash__',
         'count',
         'endswith',
         'find',
@@ -54,6 +46,7 @@ class _incompleteStringType:
         '__mul__',
         '__rmul__',
         '__getitem__',
+        '__mod__',
         'capitalize',
         'casefold',
         'center',
@@ -81,6 +74,7 @@ class _incompleteStringType:
         'partition':    untrusted.util._to_untrusted_tuple_of_strings, # returns a 3-tuple
         'rpartition':   untrusted.util._to_untrusted_tuple_of_strings, # returns a 3-tuple
         'split':        untrusted.util._to_untrusted_list,
+        'rsplit':       untrusted.util._to_untrusted_list,
         'splitlines':   untrusted.util._to_untrusted_list,
     }
 
@@ -107,22 +101,16 @@ class _incompleteStringType:
         # underlying str doesn't have __reversed__ for us to wrap
         return untrusted.iterator(reversed(self.value))
 
+    def __mod__(self, arg):
+        arg_type = type(arg)
+        arg = untrusted.util._wrap_arg(arg)
+        return self._valueType(self.value % arg_type(arg))
+
     def __str__(self):
         raise TypeError(self._cast_error)
 
     def __repr__(self):
-        # in case a repr gets printed by accident, ensure even the preview
-        # is escaped
-        value = self.value.encode('unicode_escape').decode('latin-1')
-        value = ''.join(map(lambda x: x if x in self._repr_whitelist else self._repr_replace, value))
-
-        if len(value) > self._repr_maxlen:
-            value = value[self._repr_maxlen - 3] + "..."
-
-        if (value != self.value):
-            return "<untrusted.string: (escaped/sanitised/truncated) %s>" % repr(value)
-        else:
-            return "<untrusted.string: %s>" % repr(value)
+        return "<untrusted.string of length %d>" % len(self.value)
 
     @property
     def value(self):
@@ -132,6 +120,18 @@ class _incompleteStringType:
     @property
     def _valueType(self):
         return type(self)
+
+    def __truediv__(self, args) -> str:
+        # shorthand e.g. untrusted.string("hello") / html.escape
+        if hasattr(args, '__iter__'):
+            if len(args) == 2:
+                fn, args = args
+                return self.escape(fn, *args)
+            else:
+                fn, args, kwargs = args
+                return self.escape(fn, *args, **kwargs)
+        else:
+            return self.escape(args)
 
     def escape(self, fn, *args, **kwargs) -> str:
         result = fn(self.value, *args, **kwargs)
@@ -153,7 +153,7 @@ class _incompleteStringType:
 # not picked up when operator overloading
 
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
-    ["add", "contains", "bool", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "ne", "rmul"]
+    ["add", "bool", "contains", "hash", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "ne", "rmul"]
 ))
 String = string
 

@@ -387,6 +387,20 @@ assert same(
 )
 
 
+# An untrusted mapping with untrusted keys is not allowed to format a string
+# This is by design!
+myUntrustedDict = untrusted.mappingOf(untrusted.string, untrusted.string)({'name': 'Sarah', "uid": "123"})
+
+try:
+    assert same(
+        untrusted.string("Hello {name}, UserID: {uid}").format_map(myUntrustedDict),
+        untrusted.string("Hello Sarah, UserID: 123")
+    )
+    raise AssrtionError
+except TypeError:
+    pass # expected
+
+
 # ensure untrusted.mapping never leaks into a str...
 try:
     _ =  "Hello {name}, UserID: {uid}".format_map(myUntrustedDict),
@@ -587,157 +601,263 @@ assert same(b, untrusted.string(","))
 assert same(c, untrusted.string("dog,mouse"))
 
 
-# TODO str % thing
+# str.replace(old, new[, count])
+assert same("cat,dog,hat".replace("at", "ave"), "cave,dog,have")
+assert same(untrusted.string("cat,dog,hat").replace("at", "ave"), untrusted.string("cave,dog,have"))
+assert same(untrusted.string("cat,dog,hat").replace(untrusted.string("at"), untrusted.string("ave")), untrusted.string("cave,dog,have"))
+
+# str.rfind(sub[, start[, end]])
+assert "dogcathat".rfind("at") == 7
+assert untrusted.string("dogcathat").rfind("at") == 7
+assert untrusted.string("dogcathat").rfind(untrusted.string("at")) == 7
+
+assert "dogcathat".rfind("mouse") == -1
+assert untrusted.string("mouse").rfind("at") == -1
+assert untrusted.string("mouse").rfind(untrusted.string("at")) == -1
 
 
-# TODO tests for:
-'''
-TODO
+# str.rindex(sub[, start[, end]])
+# Like rfind() but raises ValueError when the substring sub is not found.
+try:
+    _ = "dogcatmouse".rindex("tiger")
+    raise AssertionError
+except ValueError:
+    pass # expected
+
+try:
+    _ = untrusted.string("dogcatmouse").rindex("tiger")
+    raise AssertionError
+except ValueError:
+    pass # expected
+
+try:
+    _ = untrusted.string("dogcatmouse").rindex(untrusted.string("tiger"))
+    raise AssertionError
+except ValueError:
+    pass # expected
+
+try:
+    _ = untrusted.string("dogcatmouse").rindex(customstring("tiger"))
+    raise AssertionError
+except ValueError:
+    pass # expected
 
 
-str.replace(old, new[, count])
-Return a copy of the string with all occurrences of substring old replaced by new. If the optional argument count is given, only the first count occurrences are replaced.
+# str.rpartition(sep)
+# no result
+parts = "cat,dog,mouse".rpartition("X")
+a, b, c = parts
+assert same(a, "")
+assert same(b, "")
+assert same(c, "cat,dog,mouse")
 
-str.rfind(sub[, start[, end]])
-Return the highest index in the string where substring sub is found, such that sub is contained within s[start:end]. Optional arguments start and end are interpreted as in slice notation. Return -1 on failure.
+parts = untrusted.string("cat,dog,mouse").rpartition("X")
+a, b, c = parts
+assert same(a, untrusted.string(""))
+assert same(b, untrusted.string(""))
+assert same(c, untrusted.string("cat,dog,mouse"))
 
-str.rindex(sub[, start[, end]])
-Like rfind() but raises ValueError when the substring sub is not found.
+parts = untrusted.string("cat,dog,mouse").rpartition(untrusted.string("X"))
+a, b, c = parts
+assert same(a, untrusted.string(""))
+assert same(b, untrusted.string(""))
+assert same(c, untrusted.string("cat,dog,mouse"))
 
-str.rjust(width[, fillchar])
-Return the string right justified in a string of length width. Padding is done using the specified fillchar (default is an ASCII space). The original string is returned if width is less than or equal to len(s).
+parts = customstring("cat,dog,mouse").rpartition(untrusted.string("X"))
+a, b, c = parts
+assert same(a, customstring(""))
+assert same(b, customstring(""))
+assert same(c, customstring("cat,dog,mouse"))
 
-str.rpartition(sep)
-Split the string at the last occurrence of sep, and return a 3-tuple containing the part before the separator, the separator itself, and the part after the separator. If the separator is not found, return a 3-tuple containing two empty strings, followed by the string itself.
+parts = untrusted.string("cat,dog,mouse").rpartition(customstring("X"))
+a, b, c = parts
+assert same(a, untrusted.string(""))
+assert same(b, untrusted.string(""))
+assert same(c, untrusted.string("cat,dog,mouse"))
 
-str.rsplit(sep=None, maxsplit=-1)
-Return a list of the words in the string, using sep as the delimiter string. If maxsplit is given, at most maxsplit splits are done, the rightmost ones. If sep is not specified or None, any whitespace string is a separator. Except for splitting from the right, rsplit() behaves like split() which is described in detail below.
+# result
+parts = "cat,dog,mouse".rpartition(",")
+a, b, c = parts
+assert same(a, "cat,dog")
+assert same(b, ",")
+assert same(c, "mouse")
 
-str.rstrip([chars])
-Return a copy of the string with trailing characters removed. The chars argument is a string specifying the set of characters to be removed. If omitted or None, the chars argument defaults to removing whitespace. The chars argument is not a suffix; rather, all combinations of its values are stripped:
+parts = untrusted.string("cat,dog,mouse").rpartition(",")
+a, b, c = parts
+assert same(a, untrusted.string("cat,dog"))
+assert same(b, untrusted.string(","))
+assert same(c, untrusted.string("mouse"))
 
->>>
->>> '   spacious   '.rstrip()
-'   spacious'
->>> 'mississippi'.rstrip('ipz')
-'mississ'
-str.split(sep=None, maxsplit=-1)
-Return a list of the words in the string, using sep as the delimiter string. If maxsplit is given, at most maxsplit splits are done (thus, the list will have at most maxsplit+1 elements). If maxsplit is not specified or -1, then there is no limit on the number of splits (all possible splits are made).
+parts = untrusted.string("cat,dog,mouse").rpartition(untrusted.string(","))
+a, b, c = parts
+assert same(a, untrusted.string("cat,dog"))
+assert same(b, untrusted.string(","))
+assert same(c, untrusted.string("mouse"))
 
-If sep is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, '1,,2'.split(',') returns ['1', '', '2']). The sep argument may consist of multiple characters (for example, '1<>2<>3'.split('<>') returns ['1', '2', '3']). Splitting an empty string with a specified separator returns [''].
+parts = customstring("cat,dog,mouse").rpartition(untrusted.string(","))
+a, b, c = parts
+assert same(a, customstring("cat,dog"))
+assert same(b, customstring(","))
+assert same(c, customstring("mouse"))
 
-For example:
+parts = untrusted.string("cat,dog,mouse").rpartition(customstring(","))
+a, b, c = parts
+assert same(a, untrusted.string("cat,dog"))
+assert same(b, untrusted.string(","))
+assert same(c, untrusted.string("mouse"))
 
->>>
->>> '1,2,3'.split(',')
-['1', '2', '3']
->>> '1,2,3'.split(',', maxsplit=1)
-['1', '2,3']
->>> '1,2,,3,'.split(',')
-['1', '2', '', '3', '']
-If sep is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
 
-For example:
+# str.rsplit(sep=None, maxsplit=-1)
 
->>>
->>> '1 2 3'.split()
-['1', '2', '3']
->>> '1 2 3'.split(maxsplit=1)
-['1', '2 3']
->>> '   1   2   3   '.split()
-['1', '2', '3']
-str.splitlines([keepends])
-Return a list of the lines in the string, breaking at line boundaries. Line breaks are not included in the resulting list unless keepends is given and true.
+parts = "a,b,c,d".rsplit(",", maxsplit=2)
+rest,c,d = parts
+assert same(rest, "a,b")
+assert same(c, "c")
+assert same(d, "d")
 
-This method splits on the following line boundaries. In particular, the boundaries are a superset of universal newlines.
 
-Representation	Description
-\n	Line Feed
-\r	Carriage Return
-\r\n	Carriage Return + Line Feed
-\v or \x0b	Line Tabulation
-\f or \x0c	Form Feed
-\x1c	File Separator
-\x1d	Group Separator
-\x1e	Record Separator
-\x85	Next Line (C1 Control Code)
-\u2028	Line Separator
-\u2029	Paragraph Separator
-Changed in version 3.2: \v and \f added to list of line boundaries.
+parts = untrusted.string("a,b,c,d").rsplit(",", maxsplit=2)
+rest,c,d = parts
+assert same(rest, untrusted.string("a,b"))
+assert same(c, untrusted.string("c"))
+assert same(d, untrusted.string("d"))
 
-For example:
 
->>>
->>> 'ab c\n\nde fg\rkl\r\n'.splitlines()
-['ab c', '', 'de fg', 'kl']
->>> 'ab c\n\nde fg\rkl\r\n'.splitlines(keepends=True)
-['ab c\n', '\n', 'de fg\r', 'kl\r\n']
-Unlike split() when a delimiter string sep is given, this method returns an empty list for the empty string, and a terminal line break does not result in an extra line:
+parts = untrusted.string("a,b,c,d").rsplit(untrusted.string(","), maxsplit=2)
+rest,c,d = parts
+assert same(rest, untrusted.string("a,b"))
+assert same(c, untrusted.string("c"))
+assert same(d, untrusted.string("d"))
 
->>>
->>> "".splitlines()
-[]
->>> "One line\n".splitlines()
-['One line']
-For comparison, split('\n') gives:
 
->>>
->>> ''.split('\n')
-['']
->>> 'Two lines\n'.split('\n')
-['Two lines', '']
-str.startswith(prefix[, start[, end]])
-Return True if string starts with the prefix, otherwise return False. prefix can also be a tuple of prefixes to look for. With optional start, test string beginning at that position. With optional end, stop comparing string at that position.
+# str.rstrip([chars])
+assert same("cat ".rstrip(), "cat")
+assert same(untrusted.string("cat ".rstrip()), untrusted.string("cat"))
+assert same("cat ".rstrip(" ta"), "c")
+assert same(untrusted.string("cat ").rstrip(" ta"), untrusted.string("c"))
+assert same(untrusted.string("cat ").rstrip(untrusted.string(" ta")), untrusted.string("c"))
+assert same(untrusted.string("cat ").rstrip(customstring(" ta")), untrusted.string("c"))
 
-str.strip([chars])
-Return a copy of the string with the leading and trailing characters removed. The chars argument is a string specifying the set of characters to be removed. If omitted or None, the chars argument defaults to removing whitespace. The chars argument is not a prefix or suffix; rather, all combinations of its values are stripped:
 
->>>
->>> '   spacious   '.strip()
-'spacious'
->>> 'www.example.com'.strip('cmowz.')
-'example'
-str.swapcase()
-Return a copy of the string with uppercase characters converted to lowercase and vice versa. Note that it is not necessarily true that s.swapcase().swapcase() == s.
+# str.split(sep=None, maxsplit=-1)
 
-str.title()
-Return a titlecased version of the string where words start with an uppercase character and the remaining characters are lowercase.
+parts = "a,b,c,d".split(",", maxsplit=2)
+a,b,rest = parts
+assert same(a, "a")
+assert same(b, "b")
+assert same(rest, "c,d")
 
-For example:
 
->>>
->>> 'Hello world'.title()
-'Hello World'
-The algorithm uses a simple language-independent definition of a word as groups of consecutive letters. The definition works in many contexts but it means that apostrophes in contractions and possessives form word boundaries, which may not be the desired result:
+parts = untrusted.string("a,b,c,d").split(",", maxsplit=2)
+a,b,rest = parts
+assert same(a, untrusted.string("a"))
+assert same(b, untrusted.string("b"))
+assert same(rest, untrusted.string("c,d"))
 
->>>
->>> "they're bill's friends from the UK".title()
-"They'Re Bill'S Friends From The Uk"
-A workaround for apostrophes can be constructed using regular expressions:
 
->>>
->>> import re
->>> def titlecase(s):
-...     return re.sub(r"[A-Za-z]+('[A-Za-z]+)?",
-...                   lambda mo: mo.group(0)[0].upper() +
-...                              mo.group(0)[1:].lower(),
-...                   s)
-...
->>> titlecase("they're bill's friends.")
-"They're Bill's Friends."
-str.translate(table)
-Return a copy of the string in which each character has been mapped through the given translation table. The table must be an object that implements indexing via __getitem__(), typically a mapping or sequence. When indexed by a Unicode ordinal (an integer), the table object can do any of the following: return a Unicode ordinal or a string, to map the character to one or more other characters; return None, to delete the character from the return string; or raise a LookupError exception, to map the character to itself.
+parts = untrusted.string("a,b,c,d").split(untrusted.string(","), maxsplit=2)
+a,b,rest = parts
+assert same(a, untrusted.string("a"))
+assert same(b, untrusted.string("b"))
+assert same(rest, untrusted.string("c,d"))
 
-You can use str.maketrans() to create a translation map from character-to-character mappings in different formats.
+parts = customstring("a,b,c,d").split(",", maxsplit=2)
+a,b,rest = parts
+assert same(a, customstring("a"))
+assert same(b, customstring("b"))
+assert same(rest, customstring("c,d"))
 
-See also the codecs module for a more flexible approach to custom character mappings.
+parts = customstring("a,b,c,d").split(untrusted.string(","), maxsplit=2)
+a,b,rest = parts
+assert same(a, customstring("a"))
+assert same(b, customstring("b"))
+assert same(rest, customstring("c,d"))
 
-str.upper()
-Return a copy of the string with all the cased characters [4] converted to uppercase. Note that str.upper().isupper() might be False if s contains uncased characters or if the Unicode category of the resulting character(s) is not “Lu” (Letter, uppercase), but e.g. “Lt” (Letter, titlecase).
 
-The uppercasing algorithm used is described in section 3.13 of the Unicode Standard.
+# str.strip([chars])
+assert same(" cat ".strip(), "cat")
+assert same(untrusted.string(" cat ".strip()), untrusted.string("cat"))
+assert same(" cat ".strip(" ct"), "a")
+assert same(untrusted.string(" cat ").strip(" ct"), untrusted.string("a"))
+assert same(untrusted.string(" cat ").strip(untrusted.string(" ct")), untrusted.string("a"))
+assert same(untrusted.string(" cat ").strip(customstring(" ct")), untrusted.string("a"))
 
-str.zfill(width)
+# str.swapcase()
+assert same("Cat".swapcase(), "cAT")
+assert same(untrusted.string("Cat").swapcase(), untrusted.string("cAT"))
+assert same(customstring("Cat").swapcase(), customstring("cAT"))
 
-'''
+# str.title()
+assert same("hello world".title(), "Hello World")
+assert same(untrusted.string("hello world").title(), untrusted.string("Hello World"))
+
+# str.upper()
+assert same("hello world".upper(), "HELLO WORLD")
+assert same(untrusted.string("hello world").upper(), untrusted.string("HELLO WORLD"))
+
+# str.zfill(width)
+assert same("42".zfill(5), "00042")
+assert same(untrusted.string("42").zfill(5), untrusted.string("00042"))
+assert same("-42".zfill(5), "-0042")
+assert same(untrusted.string("-42").zfill(5), untrusted.string("-0042"))
+
+
+# TODO str.translate - not impleemnted
+# TODO str.maketrans - not implemented
+
+
+# hashable: a set of strings
+parts = set(["cat", "dog", "tiger"])
+assert "cat" in parts
+
+parts = set([untrusted.string("cat"), untrusted.string("dog"), untrusted.string("tiger")])
+assert "cat" in parts
+assert untrusted.string("cat") in parts
+assert customstring("cat") in parts
+
+
+# %-style format also with a number
+assert same("Hello %s aged %d" % ("Grace", 101), "Hello Grace aged 101")
+assert same(untrusted.string("Hello %s aged %d") % ("Grace", 101), untrusted.string("Hello Grace aged 101"))
+assert same(untrusted.string("Hello %s aged %d") % (untrusted.string("Grace"), 101), untrusted.string("Hello Grace aged 101"))
+
+# %-style dict format (rare) also with with number
+assert same("Hello %(name)s aged %(age)d" % {"name": "Grace", "age": 101}, "Hello Grace aged 101")
+assert same(untrusted.string("Hello %(name)s aged %(age)d") % {"name": "Grace", "age": 101}, untrusted.string("Hello Grace aged 101"))
+assert same(untrusted.string("Hello %(name)s aged %(age)d") % {"name": untrusted.string("Grace"), "age": 101}, untrusted.string("Hello Grace aged 101"))
+
+
+# An untrusted mapping with untrusted keys is not allowed to format a string
+# This is by design!
+try:
+    _ = same(untrusted.string("Hello %(name)s aged %(age)d") % {untrusted.string("name"): untrusted.string("Grace"), "age": 101}, untrusted.string("Hello Grace aged 101"))
+    raise AssrtionError
+except TypeError:
+    pass # expected
+
+
+
+# escape examples
+before = "<b>\"Hello\"</b>"
+after_qt = "&lt;b&gt;&quot;Hello&quot;&lt;/b&gt;"
+after_unqt =  "&lt;b&gt;\"Hello\"&lt;/b&gt;"
+
+assert same(html.escape(before), after_qt)
+assert same(untrusted.string(before).escape(html.escape), after_qt)
+assert same(customstring(before).escape(html.escape), after_qt)
+
+assert same(untrusted.string(before) / html.escape, after_qt)
+assert same(customstring(before) / html.escape, after_qt)
+
+assert same(html.escape(before, quote=False), after_unqt)
+assert same(untrusted.string(before).escape(html.escape, quote=False), after_unqt)
+assert same(customstring(before).escape(html.escape, quote=False), after_unqt)
+
+assert same(untrusted.string(before) / (html.escape, [], {'quote': False}), after_unqt)
+assert same(customstring(before) / (html.escape, [], {'quote': False}), after_unqt)
+
+
+
+
+
 

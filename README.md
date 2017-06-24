@@ -35,14 +35,22 @@ import html # for html.escape()
 import untrusted
 
 # example of a string that could be provided by an untrusted user
-inputString = untrusted.string("<script>alert('hack attempt!');</script>")
+firstName = untrusted.string("Grace")
+lastName = untrusted.string("<script>alert('hack attempt!');</script>")
+
+# works seamlessly with native python strings:
+fullName = firstName + " " + lastName
+
+# fullName keeps the untrusted.string type
+print(repr(fullName)) # <untrusted.string of length >
 
 try:
-    print(inputString) # raises TypeError - untrusted.string used as a `str`!
+    print(fullName) # raises TypeError - untrusted.string used as a `str`!
 except TypeError:
     print("Can't safely print(inputString)!")
 
-print("Escaped output: %s" % inputString.escape(html.escape)) # prints safe HTML!
+print("<b>Escaped output:</b> " + fullName.escape(html.escape)) # prints safe HTML!
+print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorthand!
 ```
 
 
