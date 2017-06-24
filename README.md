@@ -44,6 +44,9 @@ fullName = firstName + " " + lastName
 # fullName keeps the untrusted.string type
 print(repr(fullName)) # <untrusted.string of length 46>
 
+# but the normal string methods still work as you would expect
+fullName = fullName.title()
+
 try:
     print(fullName) # raises TypeError - untrusted.string used as a `str`!
 except TypeError:
