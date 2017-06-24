@@ -25,7 +25,7 @@ class _incompleteStringType:
         '__len__',
         '__lt__',
         '__lte__',
-        '__neq__',
+        '__ne__',
         '__contains__',
         'count',
         'endswith',
@@ -153,7 +153,7 @@ class _incompleteStringType:
 # not picked up when operator overloading
 
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
-    ["add", "contains", "bool", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "neq", "rmul"]
+    ["add", "contains", "bool", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "ne", "rmul"]
 ))
 String = string
 
