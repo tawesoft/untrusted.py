@@ -51,7 +51,7 @@ fullName = fullName.title()
 try:
     print(fullName) # raises TypeError - untrusted.string used as a `str`!
 except TypeError:
-    print("Can't safely print(inputString)!")
+    print("We caught an error, as expected!")
 
 # instead, you are forced to explicitly escape your string somehow
 print("<b>Escaped output:</b> " + fullName.escape(html.escape)) # prints safe HTML!
