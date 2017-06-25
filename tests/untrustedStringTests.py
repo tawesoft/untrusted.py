@@ -71,6 +71,15 @@ except TypeError:
 
 
 
+# container iteration
+for i in "cat":
+    assert i in ("c", "a", "t")
+
+for i in untrusted.string("cat"):
+    assert i in ("c", "a", "t")
+    assert same(i, untrusted.string("c")) or same(i, untrusted.string("a")) or same(i, untrusted.string("t"))
+
+
 # "Strings implement all of the common sequence operations"
 # https://docs.python.org/3.4/library/stdtypes.html#typesseq-common
 
@@ -201,11 +210,16 @@ assert untrusted.string("cat attack").count(untrusted.string("at")) == 2
 # x.join(y)
 assert same(''.join([]), "")
 assert same(untrusted.string('').join([]), untrusted.string(""))
+
 assert same(''.join("cat"), "cat")
 assert same(untrusted.string('').join("cat"), untrusted.string("cat"))
 assert same(untrusted.string('').join(untrusted.string("cat")), untrusted.string("cat"))
 
-# sorry, ''.join(untrusted.string(...)) won't work
+assert same(','.join(["cat", "dog", "mouse"]), "cat,dog,mouse")
+assert same(untrusted.string(',').join(["cat", "dog", "mouse"]), untrusted.string("cat,dog,mouse"))
+assert same(untrusted.string(',').join([untrusted.string("cat"), untrusted.string("dog"), untrusted.string("mouse")]), untrusted.string("cat,dog,mouse"))
+
+# sorry, str('').join(untrusted.string(...)) won't work
 # but let's make sure we get an exception
 # to be certain that an untrusted.string doesn't ever leak into a normal str
 try:
@@ -222,8 +236,8 @@ except TypeError:
 
 
 # x.reversed()
-assert ''.join(reversed("cat")) == "tac"
-assert untrusted.string('').join(reversed(untrusted.string("cat"))) == untrusted.string("tac")
+assert same(''.join(reversed("cat")), "tac")
+assert same(untrusted.string('').join(reversed(untrusted.string("cat"))), untrusted.string("tac"))
 
 
 # iteration

@@ -53,13 +53,13 @@ class _incompleteMappingType(collections.abc.Mapping):
         self._valueIterator = untrusted.iteratorOf(self._valueType)
 
     def iter(self):
-        return iter(self.keys())
+        return self.keys()
 
     def items(self):
         return map(lambda x: (self._keyType(x[0]), self._valueType(x[1])), self.obj.items())
 
     def keys(self):
-        return self._keyIterator(self.value.keys())
+        return self._keyIterator(list(self.value.keys()))
    
     def values(self):
         return self._valueIterator(self.value.values())
@@ -69,7 +69,7 @@ class _incompleteMappingType(collections.abc.Mapping):
         return (self._keyType(k), self_valueType(v))
 
     def __iter__(self):
-        yield from untrusted.iterator(self.obj, valueType=self._valueType)
+        return untrusted.iterator(self.obj, valueType=self._valueType)
 
     def __repr__(self):
         return "<untrusted.mapping of type %s to type %s>" % (repr(self._keyType), repr(self._valueType))

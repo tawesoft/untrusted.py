@@ -1,131 +1,51 @@
+import html # for html.escape()
 import untrusted
 
-# untrusted.string example
-#-------------------------------------------------------------------------------
+# example of a string that could be provided by an untrusted user
+firstName = untrusted.string("Grace")
+lastName = untrusted.string("<script>alert(\"hack attempt!\");</script>")
 
-# The `untrusted.string` is a special string type. It behaves almost exactly
-# like a normal string of type `str` - except, it cannot be implicitly used
-# where a normal string is expected, e.g. in print or other functions. This
-# improves security by preventing untrusted input being used by accident.
+# works seamlessly with native python strings:
+fullName = firstName + " " + lastName
 
-a = untrusted.string("Hello")
-b = untrusted.string("World!")
+# fullName keeps the untrusted.string type
+print(repr(fullName)) # <untrusted.string of length 46>
 
+# the normal string methods still work as you would expect
+fullName = fullName.title()
+
+# but you can't accidentally use it where a `str` is expected
 try:
-    print(a)
+    print(fullName) # raises TypeError - untrusted.string used as a `str`!
 except TypeError:
-    print("print(a) was disallowed!")
+    print("We caught an error, as expected!")
 
-print("repr(a) is: %s" % repr(a))
-print("repr(b) is: %s" % repr(b))
-
-
-# comparason with normal str values is fine
-assert untrusted.string("cat") == str("cat")
+# instead, you are forced to explicitly escape your string somehow
+print("<b>Escaped output:</b> " + fullName.escape(html.escape)) # prints safe HTML!
+print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorthand!
 
 
-# You can add strings and untrusted.strings together, and the result is a
-# new `untrusted.string` .
+# But what if you want to pass an argument to the escape function?
 
-c = a + ', ' + b
+# Option One: make a new function
 
-print("repr(c) is: %s" % repr(c)) # <untrusted.string: 'Hello, World!'>
+def myEscape1(x):
+    return html.escape(x, quote=False)
 
+myEscape2 = lambda x: html.escape(x, quote=False)
 
-d = 'Goodbye ' + b
-
-print("repr(d) is: %s" % repr(d)) # <untrusted.string: 'Goodbye World!'>
-
-
-# You can use all of the `str` methods you expect. These are whitelisted
-# so that we can be sure we didn't accidently miss any and create a potential
-# vulnerability.
-
-print("c.startswith('Hello'): %s" % c.startswith('Hello'))
-print("repr(c.upper()): %s" % repr(c.upper()))
+print("Without escaping quotes:")
+print("<b>Escaped output:</b> " + fullName / myEscape1)
+print("<b>Escaped output:</b> " + fullName / myEscape2)
 
 
-# This works with `untrusted.string` values as actual arguments too, because
-# that helps things stay neat in pratice
-
-print("c.startswith(untrusted.string('Goodbye')): %s" % c.startswith(untrusted.string('Goodbye')))
+# Option Two: escape method with extra arguments
+print("<b>Escaped output:</b> " + fullName.escape(html.escape, quote=False))
 
 
-# Some methods return more complicated types, like tuples of
-# `untrusted.string` values.
-print("repr(c.partition(',')): %s" % repr(c.partition(',')))
-
-
-# Or an `untrusted.sequence` of `untrusted.string` values.
-things = untrusted.string("apple, banana, orange, mango")
-
-print("repr(things): %s" % repr(things))
-
-things = untrusted.string("apple, banana, orange, mango")
-print("repr(things.split(','): %s" % repr(things.split(',')))
-for i in things.split(','):
-    print("    " + repr(i))
-
-print("repr(things.split(',', maxsplit=1)): %s" % repr(things.split(',', maxsplit=1)))
-for i in things.split(',', maxsplit=1):
-    print("    " + repr(i))
-
-
-# You can access the raw value by using the (read-only)  `value` property
-
-markup = untrusted.string("<b>HTML \"Example\"</b>")
-print("repr(markup): %s" % repr(markup))
-print("repr(markup.value): %s" % repr(markup.value))
-
-
-# Here's an example of escaping HTML
-
-import html
-
-print("html.escape(markup.value): %s" % html.escape(markup.value))
-print("html.escape(markup.value): %s" % html.escape(markup.value, quote=False))
-
-
-# But instead of faffing around with the value property, there's a convenient
-# "escape" method that takes a method as an argument. Any other arguments
-# are passed on to the given method. It also asserts that you actually get a
-# `str` result.
-
-print("markup.escape(html.escape): %s" % markup.escape(html.escape))
-print("markup.escape(html.escape, quote=False): %s" % markup.escape(html.escape, quote=False))
-
-
-# Here's an example using %-style formatting
-
-template = "Hello %s!"
-print(repr(template))
-print(repr(template % "world"))
-
-try:
-    print(repr(template % untrusted.string("everyone")))
-except TypeError:
-    print("formatting using untrusted string was disallowed as expected!")
-
-
-
-# Here's an example using `untrusted.string.format` (like `str.format`):
-
-template = untrusted.string("Hello {name} this is my template")
-print(repr(template))
-result = template.format(name="Grace")
-print(repr(result))
-result = template.format(name=untrusted.string("Alan"))
-print(repr(result))
-result = template.format_map({'name': "Richie"})
-print(repr(result))
-result = template.format_map({'name': untrusted.string("Ada")})
-print(repr(result))
-
-
-
-
-
-
-
+# Option Three: escape shorthand with extra arguments
+# as a tuple (function, args_list, kwargs_dict)
+myEscape = (html.escape, [], {'quote': False})
+print("<b>Escaped output:</b> " + fullName / myEscape)
 
 

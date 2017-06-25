@@ -2,7 +2,7 @@ import untrusted
 import collections.abc
 
 
-class iterator(collections.abc.Iterable):
+class iterator(collections.abc.Iterator):
 
     _keyType = TypeError # NA
     _valueType = untrusted.string
@@ -16,10 +16,13 @@ class iterator(collections.abc.Iterable):
             self._valueType = valueType
 
         self._value = value
+        self._it = iter(self._value)
    
     def __iter__(self):
-        for x in self._value:
-            yield self._valueType(x)
+        return self
+
+    def __next__(self):
+        return self._valueType(next(self._it))
 
     def __repr__(self):
         return "<untrusted.iterator of type %s>" % repr(self._valueType)

@@ -17,7 +17,8 @@ def _to_untrusted_tuple_of_strings(xs, _keyType, valueType):
 
 
 # For all arguments to `untrusted.*` methods, we want `untrusted.*` argument
-# values treated interchangably with native arguments.
+# values treated interchangably with native arguments. This function normalises
+# everything to a native type.
 def _wrap_arg(arg):
     if isinstance(arg, untrusted.string):
         return arg.value

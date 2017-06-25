@@ -52,7 +52,7 @@ class _incompleteStringType:
         'center',
         'expandtabs',
         'format',
-        'format_map',
+#        'format_map',
         'join',
         'ljust',
         'lower',
@@ -105,6 +105,10 @@ class _incompleteStringType:
         arg_type = type(arg)
         arg = untrusted.util._wrap_arg(arg)
         return self._valueType(self.value % arg_type(arg))
+
+    def format_map(self, mapping):
+        arg = untrusted.util._wrap_arg(mapping)
+        return self._valueType(self.value.format_map(arg))
 
     def __str__(self):
         raise TypeError(self._cast_error)
