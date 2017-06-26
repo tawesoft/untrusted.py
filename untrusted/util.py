@@ -45,7 +45,6 @@ def _wrap_kwargs(**kwargs):
     return _kwargs
 
 
-
 def _wrapped_method(self, name):
     '''Get a method, normalising untrusted.string and str arguments to str,
        and str results to untrusted.string, and complicated results to

@@ -59,6 +59,25 @@ print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorth
 ```
 
 
+### The `untrusted.normal` type
+
+* Like the `untrusted.string` type, but with Unicode normalisation (to NFD on
+input and to NFC on output).
+
+```python
+import untrusted
+import html
+
+unnormalised = u'\u0061\u0301' # á
+normalised   = u'\u00e1'       # also á
+
+assert unnormalised != normalised
+assert untrusted.normal(unnormalised) == untrusted.normal(normalised)
+assert normalised == untrusted.normal(unnormalised) / html.escape
+```
+
+
+
 ### Untrusted collection types
 
 This module provides types to lazily wrap collections of untrusted values.

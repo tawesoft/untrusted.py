@@ -70,6 +70,24 @@ except TypeError:
     pass # expected!
 
 
+# Test equality checks still work
+assert "cat" == untrusted.string("cat")
+assert untrusted.string("cat") == "cat"
+
+assert "cat" == customstring("cat")
+assert customstring("cat") == "cat"
+
+assert customstring("cat") == untrusted.string("cat")
+assert untrusted.string("cat") == customstring("cat")
+
+
+
+# Test hashable with set membership
+assert "cat" in [untrusted.string("cat"), untrusted.string("dog")]
+assert untrusted.string("cat") in [untrusted.string("cat"), untrusted.string("dog")]
+assert untrusted.string("cat") in ["cat", "dog"]
+
+
 
 # container iteration
 for i in "cat":
