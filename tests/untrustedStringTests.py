@@ -89,6 +89,34 @@ assert untrusted.string("cat") in ["cat", "dog"]
 
 
 
+# Test hashable with sorted
+it = iter(sorted(["cat", "dog", "aligator", "zebra", "mouse"]))
+assert same("aligator", next(it))
+assert same("cat", next(it))
+assert same("dog", next(it))
+assert same("mouse", next(it))
+assert same("zebra", next(it))
+
+it = iter(sorted([untrusted.string("cat"),
+    untrusted.string("dog"),
+    untrusted.string("aligator"),
+    untrusted.string("zebra"),
+    untrusted.string("mouse")]))
+assert same(untrusted.string("aligator"), next(it))
+assert same(untrusted.string("cat"), next(it))
+assert same(untrusted.string("dog"), next(it))
+assert same(untrusted.string("mouse"), next(it))
+assert same(untrusted.string("zebra"), next(it))
+
+it = iter(sorted(untrusted.sequence(["cat", "dog", "aligator", "zebra", "mouse"])))
+assert same(untrusted.string("aligator"), next(it))
+assert same(untrusted.string("cat"), next(it))
+assert same(untrusted.string("dog"), next(it))
+assert same(untrusted.string("mouse"), next(it))
+assert same(untrusted.string("zebra"), next(it))
+
+
+
 # container iteration
 for i in "cat":
     assert i in ("c", "a", "t")

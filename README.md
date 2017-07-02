@@ -1,17 +1,38 @@
 # untrusted.py
 
-TODO full tests
+**TODO**
 
+* Nearly complete tests
+* Not on pip just yet
 
 **Write safer Python with special untrusted types.**
 
-Tested for Python >= 3.4, but earlier versions may work.
+> The most common web application security weakness is the failure to properly
+> validate input from the client or environment.
+
+[OWASP, Data Validation](https://www.owasp.org/index.php/Data_Validation) (2 July 2017)
+
+Failure to properly handle untrusted input leaves an application vulnerable to
+[Code Injection attacks](https://www.owasp.org/index.php/Code_Injection), such
+as [Cross Site Scripting (XSS)](https://www.owasp.org/index.php/Cross-site_Scripting_(XSS)).
+
+"Some form of visible tainting on input from the client or untrusted sources" is
+one countermeasure recommended by OWASP, as part of a strategy of
+[Defence in Depth](https://www.owasp.org/index.php/Defense_in_depth).
+
+This Python module "taints" untrusted input by wrapping them in special types.
+These types behave in most respects just like native Python types, but prevent
+you from using their values accidentally. This provides not just "visible
+tainting", but runtime guarantees and statically-verifiable type safety.
+
 
 ## Quickstart
 
+Tested for Python >= 3.4, but earlier versions may work.
+
 ### Get Untrusted
 
-TODO this isn't on pip just yet
+TODO this doesn't work yet
 
     pip install untrusted
 
@@ -61,8 +82,8 @@ print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorth
 
 ### The `untrusted.normal` type
 
-* Like the `untrusted.string` type, but with Unicode normalisation (to NFD on
-input and to NFC on output).
+* Like the `untrusted.string` type, but with automatic Unicode normalisation.
+Values are normalised to NFD internally on input and normalised to NFC on output.
 
 ```python
 import untrusted
@@ -167,8 +188,11 @@ for person in mappingType(people):
 
 Remember, just because you have used one method to escape an `untrusted.string`
 into a `str`, it may not be safe in other contexts. For example, what's safe
-for HTML might still be dangerous SQL. It's best to delay the escaping until
-the final point of use - keep a value as `untrusted.*` for as long as possible.
+for HTML might still be dangerous SQL. At the time user input is captured, it
+may not be known in advance the context in which it is to be used - and
+therefore it is not yet known what is the correct validation and escaping
+strategy. It's best to delay the escaping until the final point of use -
+keep a value as `untrusted.*` for as long as possible.
 
 This module isn't a magic solution. It's a tool to be used wisely. Don't fall
 into the trap of thinking about a value "it's a `str` now so it's completely
@@ -198,10 +222,11 @@ untrusted input better than you ever could hope to, and escaping it is the
 wrong thing to do.
 
 You might mark the input as untrusted for other reasons - e.g. to enforce a
-maximum length on a search query.
+maximum length on a search query, or because you need to validate it against
+business logic.
 
 
-### Using untrusted collection types
+### The untrusted collection types are views, not copies
 
 Untrusted collection types, like `untrusted.sequence`, are
 "[views](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)"
