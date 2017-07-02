@@ -8,7 +8,7 @@ lastName = untrusted.string("<script>alert(\"hack attempt!\");</script>")
 # works seamlessly with native python strings:
 fullName = firstName + " " + lastName
 
-# fullName keeps the untrusted.string type
+# fullName was tainted and keeps the untrusted.string type
 print(repr(fullName)) # <untrusted.string of length 46>
 
 # the normal string methods still work as you would expect
