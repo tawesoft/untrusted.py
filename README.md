@@ -1,11 +1,4 @@
-# untrusted.py
-
-**TODO**
-
-* Nearly complete tests
-* Not on pip just yet
-
-**Write safer Python with special untrusted types.**
+# untrusted.py - safer Python with untrusted types
 
 > The most common web application security weakness is the failure to properly
 > validate input from the client or environment.
@@ -15,7 +8,6 @@
 Failure to properly handle untrusted input leaves an application vulnerable to
 [Code Injection attacks](https://www.owasp.org/index.php/Code_Injection), such
 as [Cross Site Scripting (XSS)](https://www.owasp.org/index.php/Cross-site_Scripting_(XSS)).
-
 "Some form of visible tainting on input from the client or untrusted sources" is
 one countermeasure recommended by OWASP, as part of a strategy of
 [Defence in Depth](https://www.owasp.org/index.php/Defense_in_depth).
@@ -24,6 +16,12 @@ This Python module "taints" untrusted input by wrapping them in special types.
 These types behave in most respects just like native Python types, but prevent
 you from using their values accidentally. This provides not just "visible
 tainting", but runtime guarantees and statically-verifiable type safety.
+
+
+## TODO
+
+* Nearly complete tests
+* Not on pip just yet
 
 
 ## Quickstart
