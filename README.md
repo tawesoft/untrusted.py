@@ -1,4 +1,4 @@
-# untrusted.py - safer Python with untrusted types
+# Untrusted: safer Python with untrusted types
 
 > The most common web application security weakness is the failure to properly
 > validate input from the client or environment.
