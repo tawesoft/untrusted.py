@@ -83,8 +83,9 @@ print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorth
 
 ### The `untrusted.normal` type
 
-* Like the `untrusted.string` type, but with automatic Unicode normalisation.
-Values are normalised to NFD internally on input and normalised to NFC on output.
+* Like the `untrusted.string` type, but with automatic Unicode normalisation
+so that [canonically equivalent](https://en.wikipedia.org/wiki/Unicode_equivalence)
+strings compare equal.
 
 ```python
 import untrusted
@@ -97,6 +98,8 @@ assert unnormalised != normalised
 assert untrusted.normal(unnormalised) == untrusted.normal(normalised)
 assert normalised == untrusted.normal(unnormalised) / html.escape
 ```
+
+Values are normalised to NFD internally on input and normalised to NFC on output.
 
 `html.escape` sees the internal NFD representation, but its return value is
 then normalised to NFC.
