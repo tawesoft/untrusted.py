@@ -17,6 +17,9 @@ These types behave in most respects just like native Python types, but prevent
 you from using their values accidentally. This provides not just "visible
 tainting", but runtime guarantees and statically-verifiable type safety.
 
+Strategies for sanitizing, escaping and validating input is out of scope
+for this module.
+
 
 ## TODO
 
