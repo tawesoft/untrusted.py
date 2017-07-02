@@ -98,6 +98,8 @@ assert untrusted.normal(unnormalised) == untrusted.normal(normalised)
 assert normalised == untrusted.normal(unnormalised) / html.escape
 ```
 
+`html.escape` sees the internal NFD representation, but its return value is
+then normalised to NFC.
 
 
 ### Untrusted collection types
