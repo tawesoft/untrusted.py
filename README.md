@@ -21,19 +21,24 @@ Strategies for sanitizing, escaping and validating input is out of scope
 for this module.
 
 
-## TODO
+## Status
 
-* Nearly complete tests
-* Not on pip just yet
+This module should be suitable for production use, with the following caveats:
+
+* *TODO* there isn't a versioned release on pip yet
+* *TODO* untrusted.sequence type is missing tests and may be incomplete
+* *TODO* untrusted.mapping type is missing tests and may be incomplete
+* *TODO* statically-verifiable type safety has not been tested
 
 
 ## Quickstart
 
 Tested for Python >= 3.4, but earlier versions may work.
 
+
 ### Get Untrusted
 
-TODO this doesn't work yet
+**TODO this doesn't work yet**
 
     pip install untrusted
 

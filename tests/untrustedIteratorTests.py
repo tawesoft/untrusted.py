@@ -52,3 +52,29 @@ try:
 except StopIteration:
     pass # expected
 
+
+
+
+# test subclass works too
+
+class myiterator(untrusted.iterator):
+    pass
+
+
+
+
+# TODO test iteratorOf works
+
+class mystring(untrusted.string):
+    pass
+
+class myiterator1(untrusted.iterator):
+    pass
+
+class myiterator2(untrusted.iterator):
+    pass
+
+
+
+
+

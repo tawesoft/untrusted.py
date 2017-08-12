@@ -4,3 +4,7 @@ $PY tests/untrustedStringTests.py
 $PY tests/untrustedNormalTests.py
 $PY tests/untrustedIteratorTests.py
 
+
+# TODO $PY tests/untrustedSequenceTests.py
+# TODO $PY tests/untrustedMappingTests.py
+
