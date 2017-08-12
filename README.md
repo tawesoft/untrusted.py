@@ -26,9 +26,13 @@ for this module.
 This module should be suitable for production use, with the following caveats:
 
 * *TODO* there isn't a versioned release on pip yet
-* *TODO* untrusted.sequence type is missing tests and may be incomplete
-* *TODO* untrusted.mapping type is missing tests and may be incomplete
+* *TODO* `untrusted.sequence` type is missing tests and may be incomplete
+* *TODO* `untrusted.mapping` type is missing tests and may be incomplete
+* *TODO* `unstrusted.\<*\>Of` is not fully tested
 * *TODO* statically-verifiable type safety has not been tested
+
+Any code with security considerations deserves the highest amount of scrutiny.
+Please exercise your judgement before using this module.
 
 
 ## Quickstart
@@ -38,15 +42,7 @@ Tested for Python >= 3.4, but earlier versions may work.
 
 ### Get Untrusted
 
-**TODO this doesn't work yet**
-
-    pip install untrusted
-
-or
-
-    pip3 install untrusted
-
-or via the repo on GitHub
+TODO. For now, clone the repo.
 
 
 ### The `untrusted.string` type
