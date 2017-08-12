@@ -31,8 +31,8 @@ This module should be suitable for production use, with the following caveats:
 * *TODO* `unstrusted.\<*\>Of` is not fully tested
 * *TODO* statically-verifiable type safety has not been tested
 
-Any code with security considerations deserves the highest amount of scrutiny.
-Please exercise your judgement before using this module.
+Any code with security considerations deserves the highest standards of
+scrutiny. Please exercise your judgement before using this module.
 
 
 ## Quickstart
