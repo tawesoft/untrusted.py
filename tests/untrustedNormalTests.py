@@ -37,10 +37,10 @@ assert same(unnormalised, untrusted.normal(normalised).value)
 
 
 # assert that for `untrusted.normalised(x) / escapefun`, escapefun sees the
-# NFD form, and a returned value in NFD is then converted to NFC automatically
+# NFC form, not the NFD form
 
 def myescape(s):
-    assert same(s, u'\u0061\u0301')
+    assert same(s, u'\u00e1')
     return s
 
 assert same(normalised, untrusted.normal(unnormalised) / myescape)
