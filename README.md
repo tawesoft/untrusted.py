@@ -102,8 +102,7 @@ assert normalised == untrusted.normal(unnormalised) / html.escape
 
 Values are normalised to NFD internally on input and normalised to NFC on output.
 
-`html.escape` sees the internal NFD representation, but its return value is
-then normalised to NFC.
+The value is normalised to NFC *before* being passed as input to `html.escape`.
 
 
 ### Untrusted collection types

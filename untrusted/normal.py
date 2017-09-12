@@ -20,9 +20,9 @@ class normal(untrusted.string):
         raise NotImplemented
 
     def escape(self, fn, *args, **kwargs) -> str:
-        result = fn(self.value, *args, **kwargs)
+        result = fn(unicodedata.normalize("NFC", self.value), *args, **kwargs)
         assert isinstance(result, str)
-        return unicodedata.normalize("NFC", result)
+        return result
 
 
 Normal=normal
