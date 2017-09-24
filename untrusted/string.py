@@ -9,7 +9,6 @@ class _incompleteStringType:
 
     # whitelist of methods to wrap that return a simple value e.g. boolean
     _safe_methods = set([
-        '__bool__',
         '__eq__',
         '__gt__',
         '__gte__',
@@ -96,7 +95,11 @@ class _incompleteStringType:
         # underlying str doesn't implement __radd__ for us to wrap
         other, *_ = untrusted.util._wrap_args(*args)
         return self._valueType(other + self.value)
-    
+
+    def __bool__(self):
+        # underlying str doesn't have __bool__ for us to wrap
+        return not not self.value
+
     def __reversed__(self):
         # underlying str doesn't have __reversed__ for us to wrap
         return untrusted.iterator(reversed(self.value))
@@ -157,7 +160,7 @@ class _incompleteStringType:
 # not picked up when operator overloading
 
 string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
-    ["add", "bool", "contains", "hash", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "ne", "rmul"]
+    ["add", "contains", "hash", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "ne", "rmul"]
 ))
 String = string
 
