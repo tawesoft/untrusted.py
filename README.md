@@ -25,7 +25,6 @@ scope for this module.
 
 This module should be suitable for production use, with the following caveats:
 
-* *TODO* there isn't a versioned release on pip yet
 * *TODO* `untrusted.sequence` type is missing tests and may be incomplete
 * *TODO* `untrusted.mapping` type is missing tests and may be incomplete
 * *TODO* `unstrusted.<*>Of` is not fully tested
@@ -42,7 +41,7 @@ Tested for Python >= 3.4, but earlier versions may work.
 
 ### Get Untrusted
 
-TODO. For now, clone the repo.
+    sudo pip3 install untrusted --upgrade
 
 
 ### The `untrusted.string` type

@@ -3,6 +3,10 @@ __pycache__
 .*
 *~
 !.gitignore
+*.egg*
+
+/build
+/dist
 
 # symlinks for local testing
 examples/untrusted
