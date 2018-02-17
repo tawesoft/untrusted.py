@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='untrusted',
-    version='0.1a1',
+    version='0.1b1',
     description='Wrapper types for untrusted input',
     long_description='Wrapper types for untrusted input',
     url='http://github.com/tawesoft/unturested',
@@ -12,7 +12,7 @@ setup(name='untrusted',
     license='MIT',
     packages=['untrusted'],
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
