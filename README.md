@@ -408,8 +408,8 @@ This is free software ([MIT license](https://www.tawesoft.co.uk/kb/article/mit-l
 
     untrusted - write safer Python with special untrusted types
 
-    Copyright © 2017 Ben Golightly <ben@tawesoft.co.uk>
-    Copyright © 2017 Tawesoft Ltd <opensource@tawesoft.co.uk>
+    Copyright © 2017 - 2018 Ben Golightly <ben@tawesoft.co.uk>
+    Copyright © 2017 - 2018 Tawesoft Ltd <opensource@tawesoft.co.uk>
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
