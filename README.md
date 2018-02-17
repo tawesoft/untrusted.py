@@ -43,6 +43,8 @@ Tested for Python >= 3.4, but earlier versions may work.
 
     sudo pip3 install untrusted --upgrade
 
+(If you only have python3 installed, you may need only `pip` - not `pip3`)
+
 
 ### The `untrusted.string` type
 
