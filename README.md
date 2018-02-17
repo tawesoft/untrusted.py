@@ -45,6 +45,30 @@ Tested for Python >= 3.4, but earlier versions may work.
 
 (If you only have python3 installed, you may need only `pip` - not `pip3`)
 
+### Try it!
+
+```python
+import html # for html.escape
+import untrusted
+
+line = untrusted.string(input("Enter some text, HTML will be escaped: "))
+
+try:
+    # You're not allowed to print an untrusted.string!
+    # This raises a TypeError!
+    print("<b>You typed:</b> " + line)
+except TypeError:
+    pass # Expected
+
+# Safely escape the HTML!
+print("<b>You typed:</b> " + line / html.escape)
+
+# / is overloaded as shorthand for:
+# print("<b>You typed:</b> " + line.escape(html.escape))
+```
+
+
+## Documentation
 
 ### The `untrusted.string` type
 
