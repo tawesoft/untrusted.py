@@ -17,8 +17,8 @@ These types behave in most respects just like native Python types, but prevent
 you from using their values accidentally. This provides not just "visible
 tainting", but runtime guarantees and statically-verifiable type safety.
 
-Strategies for sanitizing, escaping and validating input is out of scope
-for this module.
+Strategies for sanitizing, escaping, normalising or validating input are out of
+scope for this module.
 
 
 ## Status
@@ -28,7 +28,7 @@ This module should be suitable for production use, with the following caveats:
 * *TODO* there isn't a versioned release on pip yet
 * *TODO* `untrusted.sequence` type is missing tests and may be incomplete
 * *TODO* `untrusted.mapping` type is missing tests and may be incomplete
-* *TODO* `unstrusted.\<*\>Of` is not fully tested
+* *TODO* `unstrusted.<*>Of` is not fully tested
 * *TODO* statically-verifiable type safety has not been tested
 
 Any code with security considerations deserves the highest standards of
@@ -47,9 +47,10 @@ TODO. For now, clone the repo.
 
 ### The `untrusted.string` type
 
-* Looks like a `str`.
-* Feels like a `str`.
-* Definitely isn't a `str`.
+* Looks and feels like a `str` type, but can't be output without escaping
+* Seamlessly interoperable with native `str` types
+* Mixed usage of native `str` and `untrusted.string` taints `str`
+values/promotes them to `untrusted.string` types.
 
 **Example of handling untrusted HTML:**
 
@@ -73,6 +74,7 @@ fullName = fullName.title()
 # but you can't accidentally use it where a `str` is expected
 try:
     print(fullName) # raises TypeError - untrusted.string used as a `str`!
+    fullName.encode('utf8') # also raises TypeError
 except TypeError:
     print("We caught an error, as expected!")
 
@@ -81,28 +83,8 @@ print("<b>Escaped output:</b> " + fullName.escape(html.escape)) # prints safe HT
 print("<b>Escaped output:</b> " + fullName / html.escape) # use this easy shorthand!
 ```
 
-
-### The `untrusted.normal` type
-
-* Like the `untrusted.string` type, but with automatic Unicode normalisation
-so that [canonically equivalent](https://en.wikipedia.org/wiki/Unicode_equivalence)
-strings compare equal.
-
-```python
-import untrusted
-import html
-
-unnormalised = u'\u0061\u0301' # á
-normalised   = u'\u00e1'       # also á
-
-assert unnormalised != normalised
-assert untrusted.normal(unnormalised) == untrusted.normal(normalised)
-assert normalised == untrusted.normal(unnormalised) / html.escape
-```
-
-Values are normalised to NFD internally on input and normalised to NFC on output.
-
-The value is normalised to NFC *before* being passed as input to `html.escape`.
+See `untrustedStringExample.py` for composing multiple escape functions,
+passing arguments to escape functions, etc.
 
 
 ### Untrusted collection types
@@ -110,34 +92,98 @@ The value is normalised to NFC *before* being passed as input to `html.escape`.
 This module provides types to lazily wrap collections of untrusted values.
 The values are wrapped with an appropriate `untrusted.*` type when accessed.
 
+
 #### `untrusted.iterator`
 
-This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
+* This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
 over any iterable or generator yielding untrusted values.
+* It only yields values wrapped by an `untrusted.*` type
+* Usually this is an `untrusted.string` but it can also be an iterator over
+untrusted collections
 
-* Looks like a native `iterator`.
-* Feels like a native `iterator`.
-* Only yields values wrapped by an `untrusted.*` type.
+Example:
+
+```python
+import html # for html.escape
+import untrusted
+
+it = untrusted.iterator(open("example.txt"))
+
+for i, s in enumerate(it):
+    print("Line %d: %s" % (i, s.escape(html.escape).strip()))
+```
+
+See `examples/untrustedIteratorExample.py` for an untrusted nested list
+(e.g. an `untrusted.iterator` of `untrusted.iterator` of `untrusted.string`).
+
 
 #### `untrusted.sequence`
 
-This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
+* This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
 over any `list`-like object containing untrusted values.
+* All accessed values are wrapped by an `untrusted.*` type
+* Usually this is an `untrusted.string` but it can also be an iterator over
+untrusted collections
 
-* Looks like a native `list`.
-* Feels like a native `list`.
-* All accessed values are wrapped by an `untrusted.*` type.
+Example:
+
+```python
+import html # for html.escape
+import untrusted
+
+# list of strings from an untrusted source
+animals = ["cat", "dog", "monkey", "elephant", "<big>mouse</big>"]
+
+untrustedAnimalList = untrusted.sequence(animals)
+
+assert "cat" in untrustedAnimalList
+``` 
+
 
 #### `untrusted.mapping`
 
-This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
+* This is a [view](https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects)
 over any `dict`-like object mapping trusted or untrusted keys to untrusted values.
-
-* Looks like a native `dict`.
-* Feels like a native `dict`.
 * All accessed values, and optionally keys, are wrapped by an `untrusted.*` type.
+* Usually this is a mapping `str` -> `untrusted.string`, but it could
+also be a mapping `unstrusted.string` -> `untrusted.string`, or a mapping
+to an untrusted collection.
 
-#### Nested containers
+Example:
+
+```python3
+import html # for html.escape
+import untrusted
+
+user = untrusted.mapping({
+    'username': 'example-username<b>hack attempt</b>',
+    'password': 'example-password',
+})
+
+try:
+    print(user.get("username")) 
+except TypeError:
+    print("Caught the error we expected!")
+
+print(user.get("username", "default-username") / html.escape)
+```
+
+Example:
+
+```python3
+import html # for html.escape
+import untrusted
+
+untrustedType = untrusted.mappingOf(untrusted.string, untrusted.string)
+
+args = untrustedType({'animal': 'cat', '<b>hack</b>': 'attempt'})
+
+for k,v in args.items():
+    print("%s: %s" % (k / html.escape, v / html.escape))
+```
+
+
+#### Custom and Nested Containers
 
 Lazily nested containers are fully supported, too.
 
@@ -186,6 +232,117 @@ for person in mappingType(people):
     for key, value in person.items():
         print("    %s: %s" % (key, value.escape(html.escape)))
 ```   
+
+
+## Usage
+
+### untrusted.string
+
+Supports most native `str` methods, but may possibly
+have different return types.
+
+### untrusted.string.value property
+
+The underlying value - always a non-None instance of `str`.
+
+### untrusted.string()
+
+`untrusted.string(s)`
+
+Constructs a `untrusted.string` object, where `s` is a non-None instance
+of `str` or `untrusted.string`.
+
+In the case of an `untrusted.string` being constructed with an
+`untrusted.string` argument, the new value is only wrapped once. Escaping
+it will give a `str`, not an `untrusted.string`.
+
+#### untrusted.string.escape()
+
+`untrusted.string.escape(escape_function, [*args, **kwargs]) -> str`
+
+Applies the `escape_function`, a function `str -> str` that escapes
+a string and returns it, with optional arguments and keyword arguments.
+
+#### untrusted.string.valid()
+
+`untrusted.string.valid(valid_function, [*args, **kwargs]) -> str`
+
+Applies the `valid_function`, a function `str -> bool`, that checks
+a string and returns True or False, with optional arguments and
+keyword arguments.
+
+#### untrusted.string.validate()
+
+`untrusted.string.valid(validate_function, [*args, **kwargs]) -> any`
+
+Applies the `valid_function`, a function `str -> any`, that checks
+a string and returns any value (e.g. a list of reasons why a string did not
+validate), with optional arguments and keyword arguments.
+
+
+#### Overload: `untrusted.string / escape_expr`
+
+For some escape expression, `untrusted.string("value") / escape_expr -> str`
+
+An `escape_expr` here is either a function `str -> str` that escapes a string,
+or a 3-tuple `(escape_function, args, kwargs_dict)`, for example:
+
+```python
+import html # for html.escape
+import untrusted
+
+myString = untrusted.string("<b>Exam\"ple</b>")
+myEscape = (html.escape, [], {'quote': False})
+
+print(myString / html.escape)
+print(myString / myEscape)
+```
+
+
+### untrusted.\<collection\>
+
+Where `collection` is one of `iterator`, `sequence` (list-like),
+`mapping` (dict-like), or a user-constructed custom type.
+
+Supports most native collection methods, but may possibly
+have different return types.
+
+Each collection is aware of its **Value Type** (default
+`untrusted.string`).
+
+Mappings are also aware of their **Key Type** (default `str`)
+
+
+### untrusted.\<collection\>.value property
+
+The underlying value - always a non-None object that is
+an instance of the collection's Value Type.
+
+### untrusted.\<collection\> Type Constructors
+
+Create an iterator type using `untrusted.iteratorOf(type)`.
+
+Create a sequence type using `untrusted.sequenceOf(type)`.
+
+Create a mapping type using `untrusted.sequenceOf(keyType, valueType)`.
+
+These definitions are recursive.
+
+For example:
+
+```python
+import untrusted
+
+itType = untrusted.iteratorOf(untrusted.iteratorOf(untrusted.string))
+seqType = untrusted.sequenceOf(itType)
+mappingType = untrusted.mappingOf(untrusted.string, seqType)
+
+someDict = {}
+myMapping = mappingType(someDict)
+
+# or, as a less readable one-liner
+myMapping = untrusted.mappingOf(untrusted.string, seqType)(someDict)
+```
 
 
 ## Notes of Caution

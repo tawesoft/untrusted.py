@@ -17,6 +17,7 @@ fullName = fullName.title()
 # but you can't accidentally use it where a `str` is expected
 try:
     print(fullName) # raises TypeError - untrusted.string used as a `str`!
+    fullName.encode('utf8') # also raises TypeError
 except TypeError:
     print("We caught an error, as expected!")
 

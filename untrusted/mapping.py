@@ -25,7 +25,6 @@ class _incompleteMappingType(collections.abc.Mapping):
     _simple_wrapped_methods = set([
         "__missing__",
         "__getitem__",
-        "get",
         "pop",
         "setdefault",
     ])
@@ -66,7 +65,18 @@ class _incompleteMappingType(collections.abc.Mapping):
 
     def popitem(self):
         k, v = self.value.popitem()
-        return (self._keyType(k), self_valueType(v))
+        return (self._keyType(k), self._valueType(v))
+
+    def get(self, key, default=None):
+        try:
+            result = self.value[untrusted.string(key).value]
+            return self._valueType(result)
+        except KeyError:
+            if default is None:
+                return None
+            else:
+                return self._valueType(default)
+
 
     def __iter__(self):
         return untrusted.iterator(self.obj, valueType=self._valueType)
