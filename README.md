@@ -290,7 +290,7 @@ a string and returns it, with optional arguments and keyword arguments.
 
 #### untrusted.string.valid()
 
-`untrusted.string.valid(valid_function, [*args, **kwargs]) -> str`
+`untrusted.string.valid(valid_function, [*args, **kwargs]) -> bool`
 
 Applies the `valid_function`, a function `str -> bool`, that checks
 a string and returns True or False, with optional arguments and
