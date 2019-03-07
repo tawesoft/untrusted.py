@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='untrusted',
-    version='0.1b1',
+    version='0.1b2',
     description='Wrapper types for untrusted input',
     long_description='Wrapper types for untrusted input',
     url='https://github.com/tawesoft/untrusted.py',

@@ -1,9 +1,14 @@
 import collections.abc
 import untrusted
 import untrusted.util
+from typing import Any
 
 
-class _incompleteStringType:
+class UndefinedType:
+    pass
+
+
+class String:
     _keyType = TypeError # NA
     _cast_error = "Implicit cast to/of untrusted.string is not allowed"
 
@@ -41,11 +46,9 @@ class _incompleteStringType:
     # whitelist of methods to wrap that return a `str` value
     _simple_wrapped_methods = set([
         '__add__',
-        '__radd__',
         '__mul__',
         '__rmul__',
         '__getitem__',
-        '__mod__',
         'capitalize',
         'casefold',
         'center',
@@ -91,36 +94,41 @@ class _incompleteStringType:
 
         self._value = value
 
-    def __radd__(self, *args):
+    def __add__(self, other: Any) -> 'String':
+        # explicit so we can type it
+        other = untrusted.util._wrap_arg(other)
+        return self._valueType(self.value + other)
+
+    def __radd__(self, other: Any) -> 'String':
         # underlying str doesn't implement __radd__ for us to wrap
-        other, *_ = untrusted.util._wrap_args(*args)
+        other = untrusted.util._wrap_arg(other)
         return self._valueType(other + self.value)
 
     def __bool__(self):
         # underlying str doesn't have __bool__ for us to wrap
         return not not self.value
 
-    def __reversed__(self):
+    def __reversed__(self) -> 'String':
         # underlying str doesn't have __reversed__ for us to wrap
         return untrusted.iterator(reversed(self.value))
 
-    def __mod__(self, arg):
+    def __mod__(self, arg) -> 'String':
         arg_type = type(arg)
         arg = untrusted.util._wrap_arg(arg)
         return self._valueType(self.value % arg_type(arg))
 
-    def format_map(self, mapping):
+    def format_map(self, mapping) -> 'String':
         arg = untrusted.util._wrap_arg(mapping)
         return self._valueType(self.value.format_map(arg))
 
-    def __str__(self):
+    def __str__(self) -> UndefinedType: # type: ignore
         raise TypeError(self._cast_error)
 
     def __repr__(self):
         return "<untrusted.string of length %d>" % len(self.value)
 
     @property
-    def value(self):
+    def value(self) -> str:
         """Read only access to the raw `str` value."""
         return self._value
 
@@ -150,21 +158,24 @@ class _incompleteStringType:
         assert isinstance(result, bool)
         return result
 
-    def validate(self, fn, *args, **kwargs) -> any:
+    def validate(self, fn, *args, **kwargs):
         result = fn(self.value, *args, **kwargs)
         return result
 
 
-# we dynamically create the actual untrusted.string class from the above class
-# with some magic to let us easily passthrough magic methods that are otherwise
+# some magic to let us easily passthrough magic methods that are otherwise
 # not picked up when operator overloading
 
-string = type('string', (_incompleteStringType,), untrusted.util._createMagicPassthroughBindings(
+_magicMethods = (untrusted.util._createMagicPassthroughBindings(
     ["add", "contains", "hash", "eq", "gt", "gte", "getitem", "len", "lt", "lte", "mul", "ne", "rmul"]
 ))
-String = string
+
+for k,v in _magicMethods.items():
+    setattr(String, k, v)
 
 
+# alias
+string = String
 
 
 

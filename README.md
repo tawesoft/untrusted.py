@@ -15,7 +15,8 @@ one countermeasure recommended by OWASP, as part of a strategy of
 This Python module "taints" untrusted input by wrapping them in special types.
 These types behave in most respects just like native Python types, but prevent
 you from using their values accidentally. This provides not just "visible
-tainting", but runtime guarantees and statically-verifiable type safety.
+tainting", but runtime guarantees and (optionally) statically-verifiable type
+safety with [mypy](http://mypy-lang.org/).
 
 Strategies for sanitizing, escaping, normalising or validating input are out of
 scope for this module.
@@ -28,10 +29,12 @@ This module should be suitable for production use, with the following caveats:
 * *TODO* `untrusted.sequence` type is missing tests and may be incomplete
 * *TODO* `untrusted.mapping` type is missing tests and may be incomplete
 * *TODO* `unstrusted.<*>Of` is not fully tested
-* *TODO* statically-verifiable type safety has not been tested
+* *TODO* only partial coverage for statically-verifiable type safety
 
 Any code with security considerations deserves the highest standards of
 scrutiny. Please exercise your judgement before using this module.
+
+THE SOFTWARE IS PROVIDED  "AS IS",  WITHOUT WARRANTY OF ANY KIND.
 
 
 ## Quickstart
