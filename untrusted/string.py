@@ -117,6 +117,13 @@ class String:
         arg = untrusted.util._wrap_arg(arg)
         return self._valueType(self.value % arg_type(arg))
 
+    def __rmod__(self, arg) -> 'String':
+        # Note, `str % untrusted.str`/__rmod__ only works from Python >= 3.5.4
+        # due to [Python issue 28598](https://bugs.python.org/issue28598)
+        arg_type = type(arg)
+        arg = untrusted.util._wrap_arg(arg)
+        return self._valueType(self.value % arg_type(arg))
+
     def format_map(self, mapping) -> 'String':
         arg = untrusted.util._wrap_arg(mapping)
         return self._valueType(self.value.format_map(arg))
